@@ -1,11 +1,35 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import ProtectedRoute from '../components/auth/ProtectedRoute'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import useAuth from '../hooks/useAuth'
+import LoginPage from '../pages/auth/LoginPage'
+import Dashboard from '../pages/Dashboard'
+import NotFoundPage from '../pages/NotFoundPage'
+import Loader from '../components/common/Loader/Loader'
 
 const PrivateRoutes = () => {
+  const { isAuthenticated, loading } = useAuth()
+  const location = useLocation()
+
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh' 
+      }}>
+        <Loader size="large" text="Cargando..." />
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<div>Not Found</div>} />
+      <Route path="/" element={<Dashboard />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }

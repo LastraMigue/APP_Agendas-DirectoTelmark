@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-    
+
     if (!supabaseUrl || !supabaseKey || supabaseUrl === '' || supabaseKey === '') {
       console.warn('Supabase no está configurado. Usando modo demo.')
       setLoading(false)
@@ -44,11 +44,30 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   const signIn = useCallback(async (email, password) => {
-    if (!isConfigured) {
-      throw new Error('Supabase no está configurado. Configure VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY')
-    }
     setLoading(true)
     setError(null)
+
+    // Credenciales de prueba
+    if (email === 'admin@test.com' && password === 'password123') {
+      const mockUser = {
+        id: 'test-user-id',
+        email: 'admin@test.com',
+        user_metadata: { full_name: 'Usuario de Prueba' },
+        role: 'authenticated'
+      }
+      setUser(mockUser)
+      setLoading(false)
+      return { user: mockUser, session: { access_token: 'mock-token' } }
+    }
+
+    // Si no es el usuario de prueba y Supabase no está configurado
+    if (!isConfigured) {
+      setLoading(false)
+      const errorMsg = 'Credenciales inválidas'
+      setError(errorMsg)
+      throw new Error(errorMsg)
+    }
+
     try {
       const data = await authService.signIn(email, password)
       setUser(data.user)

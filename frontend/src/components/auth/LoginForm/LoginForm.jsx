@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -22,6 +23,7 @@ const loginSchema = z.object({
 const LoginForm = () => {
   const [authError, setAuthError] = useState(null)
   const { signIn, loading } = useAuth()
+  const navigate = useNavigate()
 
   const {
     register,
@@ -39,6 +41,7 @@ const LoginForm = () => {
     setAuthError(null)
     try {
       await signIn(data.email, data.password)
+      navigate('/dashboard')
     } catch (error) {
       setAuthError(error.message)
     }

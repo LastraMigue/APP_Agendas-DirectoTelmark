@@ -1,4 +1,4 @@
-import './LoginPage.css'
+import LoginForm from '../../components/auth/LoginForm'
 
 const LoginPage = () => {
   return (
@@ -14,22 +14,19 @@ const LoginPage = () => {
           <p className="login-subtitle">Accede a tu cuenta para gestionar tus citas</p>
         </div>
 
-        <form className="login-form">
-          <div className="input-wrapper">
-            <label className="input-label">Email</label>
-            <input type="email" className="input-field" placeholder="tu@email.com" />
-          </div>
-          <div className="input-wrapper">
-            <label className="input-label">Contraseña</label>
-            <input type="password" className="input-field" placeholder="Tu contraseña" />
-          </div>
-          <button type="submit" className="btn btn-primary btn-large login-form-submit">
-            Iniciar Sesión
-          </button>
-        </form>
+        <LoginForm />
+        
+        <div className="login-footer">
+          <p className="test-credentials">
+            <strong>Credenciales de prueba:</strong><br />
+            admin@test.com / password123
+          </p>
+        </div>
       </div>
     </div>
   )
 }
 
 export default LoginPage
+
+

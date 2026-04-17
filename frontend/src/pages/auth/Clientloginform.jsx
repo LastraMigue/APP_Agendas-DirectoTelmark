@@ -1,8 +1,8 @@
 import { Navigate } from 'react-router-dom'
-import LoginForm from '../../components/auth/LoginForm'
+import ClientLoginForm from '../../components/auth/Clientloginform'
 import useAuth from '../../hooks/useAuth'
 
-const LoginPage = () => {
+const ClientLoginPage = () => {
   const { isAuthenticated } = useAuth()
 
   if (isAuthenticated) {
@@ -18,16 +18,16 @@ const LoginPage = () => {
             alt="Directo Telmark" 
             className="login-logo"
           />
-          <h1 className="login-title">Agenda de Citas</h1>
-          <p className="login-subtitle">Accede a tu cuenta para gestionar tus citas</p>
+          <h1 className="login-title">Acceso Clientes</h1>
+          <p className="login-subtitle">Inicia sesión para gestionar tus citas corporativas</p>
         </div>
 
-        <LoginForm />
+        <ClientLoginForm />
         
         <div className="login-footer">
           <p className="test-credentials">
-            <strong>Credenciales de prueba:</strong><br />
-            admin@test.com / password123
+            <strong>¿Eres nuevo cliente?</strong><br />
+            Contacta con tu asesor de Directo Telmark para obtener acceso.
           </p>
         </div>
       </div>
@@ -35,6 +35,4 @@ const LoginPage = () => {
   )
 }
 
-export default LoginPage
-
-
+export default ClientLoginPage

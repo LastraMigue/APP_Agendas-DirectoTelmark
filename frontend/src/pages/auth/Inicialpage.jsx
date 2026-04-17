@@ -17,7 +17,7 @@ const Inicialpage = () => {
         <Inicialpageform />
 
         <div className="inicial-footer">
-          <p className="copyright">© 2024 Directo Telmark. Todos los derechos reservados.</p>
+          <p className="copyright">© 2026 Directo Telmark. Todos los derechos reservados.</p>
         </div>
       </div>
     </div>

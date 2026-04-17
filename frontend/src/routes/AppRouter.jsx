@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from '../context/AuthContext'
 import PrivateRoutes from './PrivateRoutes'
 import LoginPage from '../pages/auth/LoginPage'
-import Inicialpage from '../components/auth/Inicialpage/Inicialpage.jsx'
+import Inicialpage from '../pages/auth/Inicialpage'
 
 const AppRouter = () => {
   return (

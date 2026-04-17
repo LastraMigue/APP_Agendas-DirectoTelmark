@@ -29,6 +29,7 @@ const PrivateRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Dashboard />} />
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )

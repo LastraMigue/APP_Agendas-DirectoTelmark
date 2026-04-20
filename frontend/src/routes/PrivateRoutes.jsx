@@ -11,11 +11,11 @@ const PrivateRoutes = () => {
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '100vh' 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh'
       }}>
         <Loader size="large" text="Cargando..." />
       </div>
@@ -23,7 +23,7 @@ const PrivateRoutes = () => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />
+    return <Navigate to="/inicial" state={{ from: location }} replace />
   }
 
   return (

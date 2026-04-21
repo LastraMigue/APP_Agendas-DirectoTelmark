@@ -1,9 +1,11 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import LoginForm from '../../components/auth/LoginForm'
 import useAuth from '../../hooks/useAuth'
 
 const LoginPage = () => {
   const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />
@@ -12,6 +14,9 @@ const LoginPage = () => {
   return (
     <div className="login-page">
       <div className="login-container">
+        <button className="back-button" onClick={() => navigate(-1)}>
+          <ArrowLeft size={20} />
+        </button>
         <div className="login-header">
           <img 
             src="https://directotelmark.es/wp-content/uploads/2025/02/directotelmarksinfondo.png" 

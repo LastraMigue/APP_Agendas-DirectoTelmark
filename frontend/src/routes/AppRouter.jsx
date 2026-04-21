@@ -3,13 +3,17 @@ import { AuthProvider } from '../context/AuthContext'
 import PrivateRoutes from './PrivateRoutes'
 import LoginPage from '../pages/auth/LoginPage'
 import ClientLoginPage from '../pages/auth/Clientloginform'
+import ClientSelectionPage from '../pages/auth/ClientSelectionPage'
+import ClientSignInPage from '../pages/auth/ClientSignInPage'
 
 const AppRouter = () => {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<ClientLoginPage />} />
+          <Route path="/" element={<ClientSelectionPage />} />
+          <Route path="/registrarse" element={<ClientLoginPage />} />
+          <Route path="/iniciar-sesion" element={<ClientSignInPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard/*" element={<PrivateRoutes />} />
           <Route path="*" element={<Navigate to="/" replace />} />

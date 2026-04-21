@@ -1,9 +1,11 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, Link, useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import ClientLoginForm from '../../components/auth/Clientloginform'
 import useAuth from '../../hooks/useAuth'
 
 const ClientLoginPage = () => {
   const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />
@@ -12,6 +14,9 @@ const ClientLoginPage = () => {
   return (
     <div className="login-page">
       <div className="login-container">
+        <button className="back-button" onClick={() => navigate(-1)}>
+          <ArrowLeft size={20} />
+        </button>
         <div className="login-header">
           <img 
             src="https://directotelmark.es/wp-content/uploads/2025/02/directotelmarksinfondo.png" 
@@ -26,8 +31,7 @@ const ClientLoginPage = () => {
         
         <div className="login-footer">
           <p className="test-credentials">
-            <strong>¿Eres nuevo cliente?</strong><br />
-            Contacta con tu asesor de Directo Telmark para obtener acceso.
+            ¿Ya tienes cuenta? <Link to="/iniciar-sesion" className="login-link">Inicia sesión aquí</Link>
           </p>
         </div>
       </div>

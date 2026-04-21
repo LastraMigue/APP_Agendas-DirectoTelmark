@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
 
-/* Estructura Global de la Página */
-.login-page {
+.signin-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -11,7 +10,7 @@
   font-family: 'Open Sans', Arial, sans-serif;
 }
 
-.login-container {
+.signin-container {
   width: 100%;
   max-width: 400px;
   background: #fff;
@@ -44,40 +43,39 @@
   transform: translateX(-2px);
 }
 
-.login-header {
+.signin-header {
   text-align: center;
   margin-bottom: 32px;
 }
 
-.login-logo {
+.signin-logo {
   max-width: 200px;
   height: auto;
   margin-bottom: 20px;
 }
 
-.login-title {
+.signin-title {
   font-size: 24px;
   font-weight: 700;
   color: #333;
   margin: 0 0 8px 0;
 }
 
-.login-subtitle {
+.signin-subtitle {
   font-size: 14px;
   color: #666;
   margin: 0;
   line-height: 1.5;
 }
 
-/* El Formulario */
-.login-form {
+.signin-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
   width: 100%;
 }
 
-.login-form-error {
+.signin-form-error {
   background-color: #fee2e2;
   border-left: 4px solid #ef4444;
   color: #b91c1c;
@@ -89,40 +87,43 @@
   text-align: left;
 }
 
-.login-form-submit {
+.signin-form-submit {
   width: 100%;
   margin-top: 8px;
 }
 
-/* Pie de página con credenciales */
-.login-footer {
+.signin-footer {
   margin-top: 24px;
   padding-top: 24px;
   border-top: 1px solid #eee;
   text-align: center;
 }
 
-.test-credentials {
-  font-size: 13px;
+.signin-footer-text {
+  font-size: 14px;
   color: #718096;
-  line-height: 1.6;
 }
 
-.test-credentials strong {
-  color: #4a5568;
+.signin-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 600;
 }
 
-/* Responsividad */
+.signin-link:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 480px) {
-  .login-container {
+  .signin-container {
     padding: 32px 24px;
   }
 
-  .login-logo {
+  .signin-logo {
     max-width: 160px;
   }
 
-  .login-title {
+  .signin-title {
     font-size: 20px;
   }
 }

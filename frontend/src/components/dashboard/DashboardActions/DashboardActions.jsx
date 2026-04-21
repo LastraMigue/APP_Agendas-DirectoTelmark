@@ -16,7 +16,7 @@ const DashboardActions = ({ userRole }) => {
 
   const getActionsByRole = () => {
     const commonActions = [
-      { id: 'calendar', title: 'Mi Calendario', icon: <Calendar size={24} />, path: '/calendar', desc: 'Gestiona tus citas y disponibilidad' },
+      { id: 'calendar', title: 'Calendarios Agentes', icon: <Calendar size={24} />, path: '/calendar', desc: 'Gestiona citas de todos los agentes' },
     ]
 
     const adminActions = [

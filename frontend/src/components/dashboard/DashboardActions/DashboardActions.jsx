@@ -7,7 +7,8 @@ import {
   Settings, 
   Clock, 
   MessageSquare,
-  ClipboardList
+  ClipboardList,
+  CalendarPlus
 } from 'lucide-react'
 import './DashboardActions.css'
 
@@ -26,6 +27,7 @@ const DashboardActions = ({ userRole }) => {
     ]
 
     const agentActions = [
+      { id: 'take-appointment', title: 'Coger Citas', icon: <CalendarPlus size={24} />, path: '/appointments/take', desc: 'Reserva citas para clientes' },
       { id: 'new-client', title: 'Nuevo Cliente', icon: <UserPlus size={24} />, path: '/clients/new', desc: 'Registra un cliente en el sistema' },
       { id: 'history', title: 'Historial de Citas', icon: <Clock size={24} />, path: '/appointments/history', desc: 'Revisa gestiones registradas' },
       { id: 'whatsapp', title: 'Canal WhatsApp', icon: <MessageSquare size={24} />, path: '/integration/whatsapp', desc: 'Envío de recordatorios' },

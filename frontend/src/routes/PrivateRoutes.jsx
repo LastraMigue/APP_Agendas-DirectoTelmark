@@ -4,6 +4,7 @@ import LoginPage from '../pages/auth/LoginPage'
 import Dashboard from '../pages/Dashboard'
 import NotFoundPage from '../pages/NotFoundPage'
 import Loader from '../components/common/Loader/Loader'
+import TakeAppointmentPage from '../pages/appointments/TakeAppointmentPage'
 
 const PrivateRoutes = () => {
   const { isAuthenticated, loading } = useAuth()
@@ -30,6 +31,7 @@ const PrivateRoutes = () => {
     <Routes>
       <Route path="/" element={<Dashboard />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/appointments/take" element={<TakeAppointmentPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )

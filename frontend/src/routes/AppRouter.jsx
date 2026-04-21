@@ -12,10 +12,10 @@ const AppRouter = () => {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<ClientSelectionPage />} />
+          <Route path="/" element={<Inicialpage />} />
           <Route path="/registrarse" element={<ClientLoginPage />} />
           <Route path="/iniciar-sesion" element={<ClientSignInPage />} />
-          <Route path="/inicial" element={<Inicialpage />} />
+          <Route path="/seleccionar" element={<ClientSelectionPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard/*" element={<PrivateRoutes />} />
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,34 +1,29 @@
 import { useNavigate } from 'react-router-dom';
 import { User, Briefcase } from 'lucide-react';
-import Button from '../../common/Button';
 import './InicialpageForm.css';
 
 const Inicialpageform = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="inicial-form">
-      <Button
-        type="button"
-        variant="primary"
-        size="large"
-        className="inicial-btn cliente-btn"
-        onClick={() => navigate('/login-cliente')}
+    <div className="inicial-buttons">
+      <button 
+        className="inicial-button cliente-button"
+        onClick={() => navigate('/seleccionar')}
       >
-        <User className="btn-icon" />
-        Soy Cliente
-      </Button>
+        <User size={32} />
+        <span className="inicial-button-text">Soy Cliente</span>
+        <span className="inicial-button-description">Gestiona tus citas</span>
+      </button>
 
-      <Button
-        type="button"
-        variant="secondary"
-        size="large"
-        className="inicial-btn agente-btn"
+      <button 
+        className="inicial-button agente-button"
         onClick={() => navigate('/login')}
       >
-        <Briefcase className="btn-icon" />
-        Soy Agente
-      </Button>
+        <Briefcase size={32} />
+        <span className="inicial-button-text">Soy Agente</span>
+        <span className="inicial-button-description">Accede al panel</span>
+      </button>
     </div>
   );
 };

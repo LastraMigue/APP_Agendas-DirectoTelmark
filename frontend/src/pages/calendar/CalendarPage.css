@@ -1,0 +1,104 @@
+.agents-calendars-container {
+  padding: 1.5rem;
+  background-color: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 2rem;
+}
+
+.agents-calendars-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.agents-calendars-header h2 {
+  font-size: 1.8rem;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.agents-calendars-header p {
+  color: var(--text-muted);
+}
+
+.calendars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+  gap: 2rem;
+}
+
+.agent-calendar-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.agent-calendar-card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-main);
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 0.5rem;
+}
+
+/* Ajustes de FullCalendar */
+.fc {
+  font-family: inherit;
+  flex-grow: 1;
+}
+
+.fc-theme-standard .fc-scrollgrid {
+  border-color: #e2e8f0;
+}
+
+.fc-theme-standard td, .fc-theme-standard th {
+  border-color: #e2e8f0;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.1rem !important;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.fc .fc-button-primary {
+  background-color: var(--secondary) !important;
+  border-color: var(--secondary) !important;
+  color: white !important;
+  text-transform: capitalize;
+}
+
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: var(--text-main) !important;
+}
+
+.fc-daygrid-event {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: var(--text-main) !important;
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.fc-event-main {
+  color: inherit !important;
+}
+
+@media (max-width: 768px) {
+  .calendars-grid {
+    grid-template-columns: 1fr;
+  }
+}

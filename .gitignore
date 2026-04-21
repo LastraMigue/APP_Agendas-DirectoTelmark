@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Supabase
+supabase/.temp/
+
+# Dependencies
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env

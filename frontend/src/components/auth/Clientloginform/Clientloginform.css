@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
 
-/* Estructura Global de la Página */
+/* Estructura Global de la Página (Idéntica a LoginForm.css) */
 .login-page {
   min-height: 100vh;
   display: flex;
@@ -94,7 +94,7 @@
   margin-top: 8px;
 }
 
-/* Pie de página con credenciales */
+/* Pie de página */
 .login-footer {
   margin-top: 24px;
   padding-top: 24px;
@@ -110,6 +110,16 @@
 
 .test-credentials strong {
   color: #4a5568;
+}
+
+.login-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.login-link:hover {
+  text-decoration: underline;
 }
 
 /* Responsividad */

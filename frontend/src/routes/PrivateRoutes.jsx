@@ -5,6 +5,7 @@ import Dashboard from '../pages/Dashboard'
 import NotFoundPage from '../pages/NotFoundPage'
 import Loader from '../components/common/Loader/Loader'
 import TakeAppointmentPage from '../pages/appointments/TakeAppointmentPage'
+import CalendarPage from '../pages/calendar/CalendarPage'
 
 const PrivateRoutes = () => {
   const { isAuthenticated, loading } = useAuth()
@@ -24,7 +25,7 @@ const PrivateRoutes = () => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/inicial" state={{ from: location }} replace />
+    return <Navigate to="/" state={{ from: location }} replace />
   }
 
   return (
@@ -32,6 +33,7 @@ const PrivateRoutes = () => {
       <Route path="/" element={<Dashboard />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/appointments/take" element={<TakeAppointmentPage />} />
+      <Route path="/calendar" element={<CalendarPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )

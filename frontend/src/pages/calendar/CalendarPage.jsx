@@ -17,6 +17,12 @@ const CalendarPage = () => {
   const [loading, setLoading] = useState(true)
   const { user } = useContext(AuthContext)
 
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedRange, setSelectedRange] = useState(null)
+  const [selectedAgentId, setSelectedAgentId] = useState('')
+  const [availableAgents, setAvailableAgents] = useState([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   const isAdmin = user?.email === 'admin@test.com'
 
   useEffect(() => {
@@ -83,6 +89,65 @@ const CalendarPage = () => {
       }))
   }
 
+  const handleDateSelect = (selectInfo) => {
+    const { start, end } = selectInfo
+    setSelectedRange({ start, end })
+
+    const startMs = start.getTime()
+    const endMs = end.getTime()
+
+    const freeAgents = agents.filter(agent => {
+      const agentApps = appointments.filter(app => app.agent_id === agent.id)
+      
+      const hasOverlap = agentApps.some(app => {
+        const appStart = new Date(app.start_time || app.start).getTime()
+        const appEnd = new Date(app.end_time || app.end).getTime()
+        
+        return (appStart < endMs) && (appEnd > startMs)
+      })
+
+      return !hasOverlap
+    })
+
+    setAvailableAgents(freeAgents)
+    setSelectedAgentId(freeAgents.length > 0 ? freeAgents[0].id : '')
+    setIsModalOpen(true)
+  }
+
+  const handleConfirmReservation = async () => {
+    if (!selectedAgentId || !selectedRange) return
+
+    try {
+      setIsSubmitting(true)
+      const newAppointment = {
+        agent_id: selectedAgentId,
+        start_time: selectedRange.start.toISOString(),
+        end_time: selectedRange.end.toISOString(),
+        created_by: user.id,
+        client_name: user.user_metadata?.full_name || user.email || 'Cliente',
+        title: 'Cita Reservada'
+      }
+
+      await appointmentsService.create(newAppointment)
+      
+      await fetchData()
+      setIsModalOpen(false)
+      setSelectedRange(null)
+      setSelectedAgentId('')
+    } catch (error) {
+      console.error('Error creating appointment:', error)
+      alert('Error al crear la cita. Por favor intente de nuevo.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSelectedRange(null)
+    setSelectedAgentId('')
+  }
+
   if (loading) {
     return (
       <MainLayout>
@@ -130,6 +195,7 @@ const CalendarPage = () => {
                   editable={true}
                   droppable={true}
                   selectable={true}
+                  select={handleDateSelect}
                   eventDrop={handleEventDrop}
                   eventResize={handleEventDrop}
                   height="auto"
@@ -158,6 +224,7 @@ const CalendarPage = () => {
                   editable={true} // Permite mover las citas (drag & drop)
                   droppable={true}
                   selectable={true}
+                  select={handleDateSelect}
                   eventDrop={handleEventDrop}
                   eventResize={handleEventDrop} // Permite estirar para cambiar duración
                   height="auto" // Ajusta la altura automáticamente
@@ -167,6 +234,54 @@ const CalendarPage = () => {
           </div>
         )}
       </div>
+
+      {isModalOpen && (
+        <div className="reservation-modal-overlay">
+          <div className="reservation-modal">
+            <h3>Reservar Cita</h3>
+            <div className="reservation-details">
+              <p><strong>Inicio:</strong> {selectedRange?.start.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</p>
+              <p><strong>Fin:</strong> {selectedRange?.end.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</p>
+            </div>
+            
+            <div className="reservation-form">
+              <label>Agente Disponible:</label>
+              {availableAgents.length > 0 ? (
+                <select 
+                  value={selectedAgentId} 
+                  onChange={(e) => setSelectedAgentId(e.target.value)}
+                  className="agent-select"
+                >
+                  {availableAgents.map(agent => (
+                    <option key={agent.id} value={agent.id}>
+                      {agent.name || agent.full_name || agent.email}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <p className="no-agents-error">No hay agentes disponibles para este horario.</p>
+              )}
+            </div>
+
+            <div className="reservation-actions">
+              <button 
+                className="btn-cancel" 
+                onClick={handleCloseModal}
+                disabled={isSubmitting}
+              >
+                Cancelar
+              </button>
+              <button 
+                className="btn-confirm" 
+                onClick={handleConfirmReservation}
+                disabled={availableAgents.length === 0 || isSubmitting}
+              >
+                {isSubmitting ? 'Confirmando...' : 'Confirmar Reserva'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </MainLayout>
   )
 }

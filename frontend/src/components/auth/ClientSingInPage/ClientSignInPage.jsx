@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { AuthContext } from '../../../context/AuthContext'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -23,6 +24,7 @@ const ClientSignInPage = () => {
   const [authError, setAuthError] = useState(null)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const { signInClient } = useContext(AuthContext)
 
   const {
     register,
@@ -40,7 +42,7 @@ const ClientSignInPage = () => {
     setAuthError(null)
     setLoading(true)
     try {
-      console.log('Cliente login:', data)
+      await signInClient(data.email, data.name)
       navigate('/dashboard')
     } catch (error) {
       setAuthError(error.message)

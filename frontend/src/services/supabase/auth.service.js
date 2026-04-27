@@ -21,5 +21,48 @@ export const authService = {
   async getCurrentUser() {
     const { data: { user } } = await supabase.auth.getUser()
     return user
+  },
+
+  async sendOTP(email, type) {
+    // Si es login, verificamos primero que el cliente existe
+    if (type === 'login') {
+      const { data: client, error: clientError } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle()
+      
+      if (clientError || !client) {
+        throw new Error('El correo no está registrado como cliente.')
+      }
+    }
+
+    const { data, error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: type === 'registration', // Solo crea usuario en auth.users si es registro
+      }
+    })
+    if (error) throw error
+    return data
+  },
+
+  async verifyOTP(email, token) {
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'email'
+    })
+    if (error) throw error
+    return { success: true, data }
+  },
+
+  async createClient(clientData) {
+    const { data, error } = await supabase
+      .from('clients')
+      .insert([clientData])
+      .select()
+    if (error) throw error
+    return data
   }
 }

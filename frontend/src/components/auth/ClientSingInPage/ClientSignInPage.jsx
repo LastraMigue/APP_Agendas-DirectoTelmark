@@ -6,22 +6,21 @@ import { z } from 'zod'
 import { Mail, User, ArrowLeft } from 'lucide-react'
 import Button from '../../common/Button'
 import Input from '../../common/Input'
+import { authService } from '../../../services/supabase/auth.service'
 import './ClientSignInPage.css'
 
 const clientSignInSchema = z.object({
   email: z
     .string()
     .min(1, 'El email es requerido')
-    .email('Ingresa un email válido'),
-  name: z
-    .string()
-    .min(1, 'El nombre es requerido')
-    .min(3, 'El nombre debe tener al menos 3 caracteres')
+    .email('Ingresa un email válido')
 })
 
 const ClientSignInPage = () => {
   const [authError, setAuthError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [step, setStep] = useState(1) // 1: Email, 2: OTP
+  const [email, setEmail] = useState('')
   const navigate = useNavigate()
 
   const {
@@ -32,16 +31,32 @@ const ClientSignInPage = () => {
     resolver: zodResolver(clientSignInSchema),
     defaultValues: {
       email: '',
-      name: ''
+      otp: ''
     }
   })
 
-  const onSubmit = async (data) => {
+  const onSendOTP = async (data) => {
     setAuthError(null)
     setLoading(true)
     try {
-      console.log('Cliente login:', data)
-      navigate('/dashboard')
+      await authService.sendOTP(data.email, 'login')
+      setEmail(data.email)
+      setStep(2)
+    } catch (error) {
+      setAuthError(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const onVerifyOTP = async (data) => {
+    setAuthError(null)
+    setLoading(true)
+    try {
+      const result = await authService.verifyOTP(email, data.otp)
+      if (result.success) {
+        navigate('/dashboard')
+      }
     } catch (error) {
       setAuthError(error.message)
     } finally {
@@ -61,34 +76,41 @@ const ClientSignInPage = () => {
             alt="Directo Telmark" 
             className="signin-logo"
           />
-          <h1 className="signin-title">Iniciar Sesión</h1>
-          <p className="signin-subtitle">Ingresa tu email y nombre para acceder</p>
+          <h1 className="signin-title">Acceso Clientes</h1>
+          <p className="signin-subtitle">
+            {step === 1 
+              ? 'Ingresa tu email para recibir un código de acceso' 
+              : `Ingresa el código de 8 dígitos enviado a ${email}`}
+          </p>
         </div>
 
-        <form className="signin-form" onSubmit={handleSubmit(onSubmit)}>
+        <form className="signin-form" onSubmit={handleSubmit(step === 1 ? onSendOTP : onVerifyOTP)}>
           {authError && (
             <div className="signin-form-error">
               {authError}
             </div>
           )}
 
-          <Input
-            label="Nombre del Cliente"
-            type="text"
-            placeholder="Tu nombre completo"
-            icon={User}
-            error={errors.name?.message}
-            {...register('name')}
-          />
-
-          <Input
-            label="Email del Cliente"
-            type="email"
-            placeholder="tu@email.com"
-            icon={Mail}
-            error={errors.email?.message}
-            {...register('email')}
-          />
+          {step === 1 ? (
+            <Input
+              label="Email del Cliente"
+              type="email"
+              placeholder="tu@email.com"
+              icon={Mail}
+              error={errors.email?.message}
+              {...register('email')}
+            />
+          ) : (
+            <Input
+              label="Código de Verificación"
+              type="text"
+              placeholder="00000000"
+              maxLength={8}
+              icon={User}
+              error={errors.otp?.message}
+              {...register('otp')}
+            />
+          )}
 
           <Button 
             type="submit" 
@@ -97,8 +119,19 @@ const ClientSignInPage = () => {
             loading={loading}
             className="signin-form-submit"
           >
-            Iniciar Sesión
+            {step === 1 ? 'Enviar Código' : 'Verificar e Ingresar'}
           </Button>
+
+          {step === 2 && (
+            <button 
+              type="button" 
+              className="resend-button"
+              onClick={() => setStep(1)}
+              style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', marginTop: '10px', fontSize: '14px' }}
+            >
+              Cambiar email o volver a intentar
+            </button>
+          )}
         </form>
         
         <div className="signin-footer">

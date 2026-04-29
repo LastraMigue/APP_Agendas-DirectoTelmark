@@ -7,6 +7,8 @@ import Loader from '../components/common/Loader/Loader'
 import TakeAppointmentPage from '../pages/appointments/TakeAppointmentPage'
 import CalendarPage from '../pages/calendar/CalendarPage'
 import ClientBookingPage from '../pages/calendar/ClientBookingPage'
+import AgentAppointmentsPage from '../pages/appointments/AgentAppointmentsPage'
+import ClientAppointmentsPage from '../pages/appointments/ClientAppointmentsPage'
 
 const PrivateRoutes = () => {
   const { isAuthenticated, loading } = useAuth()
@@ -34,6 +36,8 @@ const PrivateRoutes = () => {
       <Route path="/" element={<Dashboard />} />
       <Route path="/book" element={<ClientBookingPage />} />
       <Route path="/appointments/take" element={<TakeAppointmentPage />} />
+      <Route path="/appointments/history" element={<AgentAppointmentsPage />} />
+      <Route path="/my-appointments" element={<ClientAppointmentsPage />} />
       <Route path="/calendar" element={<CalendarPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

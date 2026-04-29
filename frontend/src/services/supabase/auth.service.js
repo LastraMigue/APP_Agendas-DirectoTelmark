@@ -24,6 +24,19 @@ export const authService = {
   },
 
   async sendOTP(email, type) {
+    // Si es registro, verificamos que el cliente NO exista
+    if (type === 'registration') {
+      const { data: client, error: clientError } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle()
+      
+      if (client) {
+        throw new Error('Ya tienes una cuenta con este correo. Por favor, inicia sesión.')
+      }
+    }
+
     // Si es login, verificamos primero que el cliente existe
     if (type === 'login') {
       const { data: client, error: clientError } = await supabase

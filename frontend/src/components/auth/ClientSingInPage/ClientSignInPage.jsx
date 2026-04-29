@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -7,21 +7,34 @@ import { Mail, User, ArrowLeft } from 'lucide-react'
 import Button from '../../common/Button'
 import Input from '../../common/Input'
 import { authService } from '../../../services/supabase/auth.service'
+import useAuth from '../../../hooks/useAuth'
 import './ClientSignInPage.css'
 
 const clientSignInSchema = z.object({
   email: z
     .string()
     .min(1, 'El email es requerido')
-    .email('Ingresa un email válido')
+    .email('Ingresa un email válido'),
+  otp: z.string().optional()
 })
 
 const ClientSignInPage = () => {
+  const { isAuthenticated, signOut, loading: authLoading } = useAuth()
+  const [isFirstCheck, setIsFirstCheck] = useState(true)
   const [authError, setAuthError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(1) // 1: Email, 2: OTP
   const [email, setEmail] = useState('')
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && isFirstCheck) {
+      signOut()
+    }
+    if (!authLoading) {
+      setIsFirstCheck(false)
+    }
+  }, [authLoading, isAuthenticated, isFirstCheck, signOut])
 
   const {
     register,

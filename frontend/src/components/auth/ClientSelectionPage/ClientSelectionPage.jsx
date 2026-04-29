@@ -1,9 +1,22 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { UserPlus, LogIn, ArrowLeft } from 'lucide-react'
+import useAuth from '../../../hooks/useAuth'
 import './ClientSelectionPage.css'
 
 const ClientSelectionPage = () => {
+  const { isAuthenticated, signOut, loading } = useAuth()
+  const [isFirstCheck, setIsFirstCheck] = useState(true)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!loading && isAuthenticated && isFirstCheck) {
+      signOut()
+    }
+    if (!loading) {
+      setIsFirstCheck(false)
+    }
+  }, [loading, isAuthenticated, isFirstCheck, signOut])
 
   return (
     <div className="selection-page">

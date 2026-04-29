@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { AuthContext } from '../../../context/AuthContext'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -19,7 +20,7 @@ const clientSignInSchema = z.object({
 })
 
 const ClientSignInPage = () => {
-  const { isAuthenticated, signOut, loading: authLoading } = useAuth()
+  const { isAuthenticated, signOut, loading: authLoading, signInClient } = useAuth()
   const [isFirstCheck, setIsFirstCheck] = useState(true)
   const [authError, setAuthError] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -84,15 +85,15 @@ const ClientSignInPage = () => {
           <ArrowLeft size={20} />
         </button>
         <div className="signin-header">
-          <img 
-            src="https://directotelmark.es/wp-content/uploads/2025/02/directotelmarksinfondo.png" 
-            alt="Directo Telmark" 
+          <img
+            src="https://directotelmark.es/wp-content/uploads/2025/02/directotelmarksinfondo.png"
+            alt="Directo Telmark"
             className="signin-logo"
           />
           <h1 className="signin-title">Acceso Clientes</h1>
           <p className="signin-subtitle">
-            {step === 1 
-              ? 'Ingresa tu email para recibir un código de acceso' 
+            {step === 1
+              ? 'Ingresa tu email para recibir un código de acceso'
               : `Ingresa el código de 8 dígitos enviado a ${email}`}
           </p>
         </div>
@@ -125,9 +126,9 @@ const ClientSignInPage = () => {
             />
           )}
 
-          <Button 
-            type="submit" 
-            variant="primary" 
+          <Button
+            type="submit"
+            variant="primary"
             size="large"
             loading={loading}
             className="signin-form-submit"
@@ -136,8 +137,8 @@ const ClientSignInPage = () => {
           </Button>
 
           {step === 2 && (
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="resend-button"
               onClick={() => setStep(1)}
               style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', marginTop: '10px', fontSize: '14px' }}
@@ -146,7 +147,7 @@ const ClientSignInPage = () => {
             </button>
           )}
         </form>
-        
+
         <div className="signin-footer">
           <p className="signin-footer-text">
             ¿No tienes cuenta? <Link to="/registrarse" className="signin-link">Regístrate aquí</Link>

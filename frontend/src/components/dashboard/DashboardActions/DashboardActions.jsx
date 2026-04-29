@@ -7,7 +7,8 @@ import {
   Settings, 
   Clock, 
   MessageSquare,
-  ClipboardList
+  ClipboardList,
+  CalendarPlus
 } from 'lucide-react'
 import './DashboardActions.css'
 
@@ -26,18 +27,19 @@ const DashboardActions = ({ userRole }) => {
     ]
 
     const agentActions = [
-      { id: 'new-client', title: 'Nuevo Cliente', icon: <UserPlus size={24} />, path: '/clients/new', desc: 'Registra un cliente en el sistema' },
-      { id: 'history', title: 'Historial de Citas', icon: <Clock size={24} />, path: '/appointments/history', desc: 'Revisa gestiones registradas' },
-      { id: 'whatsapp', title: 'Canal WhatsApp', icon: <MessageSquare size={24} />, path: '/integration/whatsapp', desc: 'Envío de recordatorios' },
+      { id: 'take-appointment', title: 'Coger Citas', icon: <CalendarPlus size={24} />, path: '/dashboard/appointments/take', desc: 'Reserva citas para clientes' },
+      { id: 'new-client', title: 'Nuevo Cliente', icon: <UserPlus size={24} />, path: '/dashboard/clients/new', desc: 'Registra un cliente en el sistema' },
+      { id: 'history', title: 'Historial de Citas', icon: <Clock size={24} />, path: '/dashboard/appointments/history', desc: 'Revisa gestiones registradas' },
+      { id: 'whatsapp', title: 'Canal WhatsApp', icon: <MessageSquare size={24} />, path: '/dashboard/integration/whatsapp', desc: 'Envío de recordatorios' },
     ]
 
     const clientActions = [
-      { id: 'my-appointments', title: 'Mis Citas', icon: <ClipboardList size={24} />, color: '#1a202c', path: '/my-appointments', desc: 'Ver estado de mis reservas' },
-      { id: 'book', title: 'Reservar Cita', icon: <Calendar size={24} />, color: '#1a202c', path: '/book', desc: 'Solicita un nuevo hueco' },
+      { id: 'my-appointments', title: 'Mis Citas', icon: <ClipboardList size={24} />, color: '#1a202c', path: '/dashboard/my-appointments', desc: 'Ver estado de mis reservas' },
+      { id: 'book', title: 'Reservar Cita', icon: <Calendar size={24} />, color: '#1a202c', path: '/dashboard/book', desc: 'Solicita un nuevo hueco' },
     ]
 
     if (userRole === 'admin') return [...commonActions, ...adminActions]
-    if (userRole === 'cliente') return clientActions
+    if (userRole === 'cliente' || userRole === 'client') return clientActions
     return [...commonActions, ...agentActions]
   }
 

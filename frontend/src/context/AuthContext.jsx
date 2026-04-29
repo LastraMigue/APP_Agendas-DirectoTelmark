@@ -115,6 +115,22 @@ export const AuthProvider = ({ children }) => {
     }
   }, [isConfigured])
 
+  const signInClient = useCallback(async (email, name) => {
+    setLoading(true)
+    setError(null)
+    
+    // Loguear a cualquier usuario que entre por el form de clientes como un cliente mock
+    const mockClient = {
+      id: `client-${email}`,
+      email: email,
+      user_metadata: { full_name: name },
+      role: 'authenticated'
+    }
+    setUser(mockClient)
+    setLoading(false)
+    return { user: mockClient, session: { access_token: 'mock-client-token' } }
+  }, [])
+
   const clearError = useCallback(() => {
     setError(null)
   }, [])
@@ -124,12 +140,13 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     signIn,
+    signInClient,
     signUp,
     signOut,
     clearError,
     isAuthenticated: !!user,
     isConfigured
-  }), [user, loading, error, signIn, signUp, signOut, clearError, isConfigured])
+  }), [user, loading, error, signIn, signInClient, signUp, signOut, clearError, isConfigured])
 
   return (
     <AuthContext.Provider value={value}>

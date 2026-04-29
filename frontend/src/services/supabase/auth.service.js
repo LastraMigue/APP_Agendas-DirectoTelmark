@@ -82,7 +82,7 @@ export const authService = {
       await supabase.auth.updateUser({
         data: { 
           full_name: clientData.full_name,
-          role: 'client'
+          role: 'cliente'
         }
       })
     } catch (updateError) {

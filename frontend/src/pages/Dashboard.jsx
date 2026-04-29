@@ -27,7 +27,7 @@ const Dashboard = () => {
             setDisplayName(client.full_name)
             // Actualizar metadatos para la próxima vez
             await supabase.auth.updateUser({
-              data: { full_name: client.full_name, role: 'client' }
+              data: { full_name: client.full_name, role: 'cliente' }
             })
             return
           }

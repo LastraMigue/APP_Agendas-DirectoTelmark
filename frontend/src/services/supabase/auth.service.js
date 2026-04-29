@@ -76,6 +76,19 @@ export const authService = {
       .insert([clientData])
       .select()
     if (error) throw error
+    
+    // Actualizamos el nombre en los metadatos de autenticación para que aparezca en el dashboard
+    try {
+      await supabase.auth.updateUser({
+        data: { 
+          full_name: clientData.full_name,
+          role: 'client'
+        }
+      })
+    } catch (updateError) {
+      console.warn('No se pudieron actualizar los metadatos del usuario:', updateError)
+    }
+
     return data
   }
 }

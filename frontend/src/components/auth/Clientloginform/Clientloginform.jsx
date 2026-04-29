@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { Mail, User, Phone } from 'lucide-react'
 import Button from '../../common/Button'
 import Input from '../../common/Input'
+import { authService } from '../../../services/supabase/auth.service'
 import './Clientloginform.css'
 
 const clientLoginSchema = z.object({
@@ -20,35 +21,61 @@ const clientLoginSchema = z.object({
   name: z
     .string()
     .min(1, 'El nombre es requerido')
-    .min(3, 'El nombre debe tener al menos 3 caracteres')
+    .min(3, 'El nombre debe tener al menos 3 caracteres'),
+  otp: z.string().optional()
 })
 
 const ClientLoginForm = () => {
   const [authError, setAuthError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [step, setStep] = useState(1) // 1: Registration info, 2: OTP
+  const [email, setEmail] = useState('')
   const navigate = useNavigate()
 
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors }
   } = useForm({
     resolver: zodResolver(clientLoginSchema),
     defaultValues: {
       email: '',
       phone: '',
-      name: ''
+      name: '',
+      otp: ''
     }
   })
 
-  const onSubmit = async (data) => {
+  const onSendOTP = async (data) => {
     setAuthError(null)
     setLoading(true)
     try {
-      // TODO: Implement client authentication logic
-      console.log('Cliente login:', data)
-      // For now, just simulate success or navigation
-      navigate('/dashboard')
+      await authService.sendOTP(data.email, 'registration')
+      setEmail(data.email)
+      setStep(2)
+    } catch (error) {
+      setAuthError(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const onVerifyOTP = async (data) => {
+    setAuthError(null)
+    setLoading(true)
+    try {
+      const result = await authService.verifyOTP(email, data.otp)
+      if (result.success) {
+        // Ahora que el email está verificado, guardamos los datos del cliente
+        const formData = getValues()
+        await authService.createClient({
+          full_name: formData.name,
+          email: formData.email,
+          phone: formData.phone
+        })
+        navigate('/dashboard')
+      }
     } catch (error) {
       setAuthError(error.message)
     } finally {
@@ -57,40 +84,58 @@ const ClientLoginForm = () => {
   }
 
   return (
-    <form className="login-form" onSubmit={handleSubmit(onSubmit)}>
+    <form className="login-form" onSubmit={handleSubmit(step === 1 ? onSendOTP : onVerifyOTP)}>
       {authError && (
         <div className="login-form-error">
           {authError}
         </div>
       )}
-      {/* El orden de los campos ha sido actualizado: Nombre, Email, Teléfono */}
 
-      <Input
-        label="Nombre del Cliente"
-        type="text"
-        placeholder="Tu nombre completo"
-        icon={User}
-        error={errors.name?.message}
-        {...register('name')}
-      />
+      {step === 1 ? (
+        <>
+          <Input
+            label="Nombre del Cliente"
+            type="text"
+            placeholder="Tu nombre completo"
+            icon={User}
+            error={errors.name?.message}
+            {...register('name')}
+          />
 
-      <Input
-        label="Email del Cliente"
-        type="email"
-        placeholder="tu@email.com"
-        icon={Mail}
-        error={errors.email?.message}
-        {...register('email')}
-      />
+          <Input
+            label="Email del Cliente"
+            type="email"
+            placeholder="tu@email.com"
+            icon={Mail}
+            error={errors.email?.message}
+            {...register('email')}
+          />
 
-      <Input
-        label="Número de Teléfono"
-        type="tel"
-        placeholder="600 000 000"
-        icon={Phone}
-        error={errors.phone?.message}
-        {...register('phone')}
-      />
+          <Input
+            label="Número de Teléfono"
+            type="tel"
+            placeholder="600 000 000"
+            icon={Phone}
+            error={errors.phone?.message}
+            {...register('phone')}
+          />
+        </>
+      ) : (
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <p style={{ color: '#666', marginBottom: '20px' }}>
+            Hemos enviado un código de 8 dígitos a <strong>{email}</strong>
+          </p>
+          <Input
+            label="Código de Verificación"
+            type="text"
+            placeholder="00000000"
+            maxLength={8}
+            icon={User}
+            error={errors.otp?.message}
+            {...register('otp')}
+          />
+        </div>
+      )}
 
       <Button 
         type="submit" 
@@ -99,8 +144,19 @@ const ClientLoginForm = () => {
         loading={loading}
         className="login-form-submit"
       >
-        Enviar Datos Cliente
+        {step === 1 ? 'Registrarme' : 'Verificar y Completar'}
       </Button>
+
+      {step === 2 && (
+        <button 
+          type="button" 
+          className="resend-button"
+          onClick={() => setStep(1)}
+          style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', marginTop: '10px', fontSize: '14px', width: '100%' }}
+        >
+          Corregir datos o volver a intentar
+        </button>
+      )}
     </form>
   )
 }

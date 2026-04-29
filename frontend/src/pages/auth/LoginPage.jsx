@@ -1,15 +1,22 @@
-import { Navigate, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import LoginForm from '../../components/auth/LoginForm'
 import useAuth from '../../hooks/useAuth'
 
 const LoginPage = () => {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, signOut, loading } = useAuth()
+  const [isFirstCheck, setIsFirstCheck] = useState(true)
   const navigate = useNavigate()
 
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />
-  }
+  useEffect(() => {
+    if (!loading && isAuthenticated && isFirstCheck) {
+      signOut()
+    }
+    if (!loading) {
+      setIsFirstCheck(false)
+    }
+  }, [loading, isAuthenticated, isFirstCheck, signOut])
 
   return (
     <div className="login-page">

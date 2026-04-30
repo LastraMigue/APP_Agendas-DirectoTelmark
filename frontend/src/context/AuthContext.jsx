@@ -47,17 +47,30 @@ export const AuthProvider = ({ children }) => {
     setLoading(true)
     setError(null)
 
-    // Credenciales de prueba
+    // Credenciales de prueba — Admin/Supervisor
     if (email === 'admin@test.com' && password === 'password123') {
       const mockUser = {
-        id: 'test-user-id',
+        id: 'test-admin-id',
         email: 'admin@test.com',
-        user_metadata: { full_name: 'Usuario de Prueba' },
+        user_metadata: { full_name: 'Administrador Test', role: 'admin' },
         role: 'authenticated'
       }
       setUser(mockUser)
       setLoading(false)
       return { user: mockUser, session: { access_token: 'mock-token' } }
+    }
+
+    // Credenciales de prueba — Agente Especial
+    if (email === 'agente007@test.com' && password === 'miguemariquita') {
+      const mockUser = {
+        id: 'test-agent-007',
+        email: 'agente007@test.com',
+        user_metadata: { full_name: 'Agente 007', role: 'agente' },
+        role: 'authenticated'
+      }
+      setUser(mockUser)
+      setLoading(false)
+      return { user: mockUser, session: { access_token: 'mock-agent-007-token' } }
     }
 
     // Si no es el usuario de prueba y Supabase no está configurado

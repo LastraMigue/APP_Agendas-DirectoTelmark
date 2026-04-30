@@ -9,8 +9,8 @@ const Dashboard = () => {
   const { user } = useContext(AuthContext)
   const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name || user?.email || '')
   
-  // Lógica de detección de rol
-  const userRole = user?.email === 'admin@test.com' ? 'admin' : (user?.user_metadata?.role || 'agente')
+  // Lógica de detección de rol — prioriza user_metadata.role
+  const userRole = user?.user_metadata?.role || (user?.email === 'admin@test.com' ? 'admin' : 'agente')
 
   useEffect(() => {
     const fetchProfileData = async () => {

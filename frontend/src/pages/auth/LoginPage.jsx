@@ -25,9 +25,9 @@ const LoginPage = () => {
           <ArrowLeft size={20} />
         </button>
         <div className="login-header">
-          <img 
-            src="https://directotelmark.es/wp-content/uploads/2025/02/directotelmarksinfondo.png" 
-            alt="Directo Telmark" 
+          <img
+            src="https://directotelmark.es/wp-content/uploads/2025/02/directotelmarksinfondo.png"
+            alt="Directo Telmark"
             className="login-logo"
           />
           <h1 className="login-title">Agenda de Citas</h1>
@@ -35,12 +35,21 @@ const LoginPage = () => {
         </div>
 
         <LoginForm />
-        
+
         <div className="login-footer">
-          <p className="test-credentials">
-            <strong>Credenciales de prueba:</strong><br />
-            admin@test.com / password123
-          </p>
+          <div className="test-credentials-container">
+            <p className="test-credentials-title"><strong>Acceso de Prueba:</strong></p>
+            <div className="test-credentials-grid">
+              <div className="test-credential-item">
+                <span className="label">Admin:</span>
+                <code>admin@test.com / password123</code>
+              </div>
+              <div className="test-credential-item">
+                <span className="label">Agente:</span>
+                <code>agente007@test.com / 007</code>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

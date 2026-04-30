@@ -30,5 +30,6 @@ supabase/.temp/
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
+frontend/.env
 # Environment files
 # frontend/.env  # Comenta esto si quieres usar variables de entorno

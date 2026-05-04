@@ -1,0 +1,225 @@
+.agents-calendars-container {
+  padding: 1.5rem;
+  background-color: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 2rem;
+}
+
+.agents-calendars-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.agents-calendars-header h2 {
+  font-size: 1.8rem;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.agents-calendars-header p {
+  color: var(--text-muted);
+}
+
+.calendars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+  gap: 2rem;
+}
+
+.agent-calendar-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.agent-calendar-card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-main);
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 0.5rem;
+}
+
+/* Ajustes de FullCalendar */
+.fc {
+  font-family: inherit;
+  flex-grow: 1;
+}
+
+.fc-theme-standard .fc-scrollgrid {
+  border-color: #e2e8f0;
+}
+
+.fc-theme-standard td, .fc-theme-standard th {
+  border-color: #e2e8f0;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.1rem !important;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.fc .fc-button-primary {
+  background-color: var(--secondary) !important;
+  border-color: var(--secondary) !important;
+  color: white !important;
+  text-transform: capitalize;
+}
+
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: var(--text-main) !important;
+}
+
+.fc-daygrid-event {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: var(--text-main) !important;
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.fc-event-main {
+  color: inherit !important;
+}
+
+@media (max-width: 768px) {
+  .calendars-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Modal de Reserva */
+.reservation-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.reservation-modal {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.reservation-modal h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--text-main);
+  text-align: center;
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 0.5rem;
+}
+
+.reservation-details {
+  background: var(--bg-light);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.reservation-details p {
+  margin: 0.5rem 0;
+}
+
+.reservation-form {
+  margin-bottom: 2rem;
+}
+
+.reservation-form label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--text-main);
+}
+
+.agent-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: white;
+  color: var(--text-main);
+}
+
+.agent-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+.no-agents-error {
+  color: #ef4444;
+  background: #fef2f2;
+  padding: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #fca5a5;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.reservation-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.btn-cancel, .btn-confirm {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background-color: #d1d5db;
+}
+
+.btn-confirm {
+  background-color: var(--primary);
+  color: var(--text-main);
+}
+
+.btn-confirm:hover:not(:disabled) {
+  background-color: #d97706; /* slightly darker primary */
+  color: white;
+}
+
+.btn-confirm:disabled, .btn-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
+
+.inicial-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+  padding: 20px;
+  font-family: 'Open Sans', Arial, sans-serif;
+}
+
+.inicial-container {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+}
+
+.inicial-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.inicial-logo {
+  max-width: 200px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.inicial-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.inicial-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.inicial-footer {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+
+.copyright {
+  font-size: 13px;
+  color: #718096;
+}
+
+.inicial-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inicial-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 32px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.inicial-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.cliente-button:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.cliente-button:hover .inicial-button-text {
+  color: #059669;
+}
+
+.agente-button:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.agente-button:hover .inicial-button-text {
+  color: #2563eb;
+}
+
+.inicial-button-text {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 12px;
+  transition: color 0.3s ease;
+}
+
+.inicial-button-description {
+  font-size: 14px;
+  color: #718096;
+  margin-top: 4px;
+}
+
+@media (max-width: 480px) {
+  .inicial-container {
+    padding: 32px 24px;
+  }
+
+  .inicial-logo {
+    max-width: 160px;
+  }
+
+  .inicial-title {
+    font-size: 20px;
+  }
+
+  .inicial-button {
+    padding: 20px 24px;
+  }
+
+  .inicial-button-text {
+    font-size: 18px;
+  }
+}

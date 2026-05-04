@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
+
+.selection-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+  padding: 20px;
+  font-family: 'Open Sans', Arial, sans-serif;
+}
+
+.selection-container {
+  width: 100%;
+  max-width: 500px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  position: relative;
+}
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.back-button:hover {
+  background: #f5f5f5;
+  transform: translateX(-2px);
+}
+
+.selection-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.selection-logo {
+  max-width: 200px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.selection-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.selection-subtitle {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.selection-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.selection-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 32px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.selection-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.register-button:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.register-button:hover .button-text {
+  color: #059669;
+}
+
+.login-button:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.login-button:hover .button-text {
+  color: #2563eb;
+}
+
+.button-text {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 12px;
+  transition: color 0.3s ease;
+}
+
+.button-description {
+  font-size: 14px;
+  color: #718096;
+  margin-top: 4px;
+}
+
+@media (max-width: 480px) {
+  .selection-container {
+    padding: 32px 24px;
+  }
+
+  .selection-logo {
+    max-width: 160px;
+  }
+
+  .selection-title {
+    font-size: 24px;
+  }
+
+  .selection-button {
+    padding: 20px 24px;
+  }
+
+  .button-text {
+    font-size: 18px;
+  }
+}

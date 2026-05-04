@@ -46,7 +46,7 @@ const LoginPage = () => {
               </div>
               <div className="test-credential-item">
                 <span className="label">Agente:</span>
-                <code>agente007@test.com / 007</code>
+                <code>agente007@test.com / 007007</code>
               </div>
             </div>
           </div>

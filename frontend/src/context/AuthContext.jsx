@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     // Credenciales de prueba — Agente Especial
-    if (email === 'agente007@test.com' && password === 'miguemariquita') {
+    if (email === 'agente007@test.com' && password === '007007') {
       const mockUser = {
         id: 'test-agent-007',
         email: 'agente007@test.com',

@@ -26,26 +26,24 @@ export const authService = {
   async sendOTP(email, type) {
     // Si es registro, verificamos que el cliente NO exista
     if (type === 'registration') {
-      const { data: client, error: clientError } = await supabase
-        .from('clients')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle()
+      const { data: exists, error: rpcError } = await supabase
+        .rpc('check_client_email_exists', { search_email: email })
       
-      if (client) {
+      if (rpcError) {
+        throw new Error('Error al verificar el correo. Intenta de nuevo.')
+      }
+
+      if (exists) {
         throw new Error('Ya tienes una cuenta con este correo. Por favor, inicia sesión.')
       }
     }
 
     // Si es login, verificamos primero que el cliente existe
     if (type === 'login') {
-      const { data: client, error: clientError } = await supabase
-        .from('clients')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle()
+      const { data: exists, error: rpcError } = await supabase
+        .rpc('check_client_email_exists', { search_email: email })
       
-      if (clientError || !client) {
+      if (rpcError || !exists) {
         throw new Error('El correo no está registrado como cliente.')
       }
     }

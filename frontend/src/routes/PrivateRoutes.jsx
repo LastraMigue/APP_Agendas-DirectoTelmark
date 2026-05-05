@@ -1,14 +1,14 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import useAuth from '../hooks/useAuth'
-import LoginPage from '../pages/auth/LoginPage'
+import LoginPage from '../pages/LoginPage'
 import Dashboard from '../pages/Dashboard'
 import NotFoundPage from '../pages/NotFoundPage'
-import Loader from '../components/common/Loader/Loader'
-import TakeAppointmentPage from '../pages/appointments/TakeAppointmentPage'
-import CalendarPage from '../pages/calendar/CalendarPage'
-import ClientBookingPage from '../pages/calendar/ClientBookingPage'
-import AgentAppointmentsPage from '../pages/appointments/AgentAppointmentsPage'
-import ClientAppointmentsPage from '../pages/appointments/ClientAppointmentsPage'
+import Loader from '../components/Loader/Loader'
+import TakeAppointmentPage from '../pages/TakeAppointmentPage'
+import CalendarPage from '../pages/CalendarPage'
+import ClientBookingPage from '../pages/ClientBookingPage'
+import AgentAppointmentsPage from '../pages/AgentAppointmentsPage'
+import ClientAppointmentsPage from '../pages/ClientAppointmentsPage'
 
 const PrivateRoutes = () => {
   const { isAuthenticated, loading } = useAuth()

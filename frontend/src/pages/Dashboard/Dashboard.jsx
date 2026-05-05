@@ -16,12 +16,21 @@ const Dashboard = () => {
     const fetchProfileData = async () => {
       if (user && !user.user_metadata?.full_name) {
         try {
-          // Intentar buscar en clientes
-          const { data: client } = await supabase
+          // Intentar buscar en clientes (primero por user_id, luego por email)
+          let { data: client } = await supabase
             .from('clients')
             .select('full_name')
-            .eq('email', user.email)
+            .eq('user_id', user.id)
             .maybeSingle()
+          
+          if (!client && user.email) {
+            const { data: clientByEmail } = await supabase
+              .from('clients')
+              .select('full_name')
+              .eq('email', user.email.toLowerCase())
+              .maybeSingle()
+            client = clientByEmail
+          }
           
           if (client) {
             setDisplayName(client.full_name)

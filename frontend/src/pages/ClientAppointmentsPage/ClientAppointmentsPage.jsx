@@ -21,24 +21,24 @@ const ClientAppointmentsPage = () => {
       setLoading(true)
       try {
         if (user) {
-          // Find client id
-          const { data: clientData } = await supabase
+          // Find client id (prioritize user_id link)
+          let { data: clientData } = await supabase
             .from('clients')
             .select('id')
-            .eq('email', user.email)
+            .eq('user_id', user.id)
             .maybeSingle()
           
-          let currentClientId = clientData?.id
-
-          if (!currentClientId) {
-            // Fallback: Check if client.id matches user.id
-            const { data: clientById } = await supabase
+          if (!clientData && user.email) {
+            // Fallback: Check by email
+            const { data: clientByEmail } = await supabase
               .from('clients')
               .select('id')
-              .eq('id', user.id)
+              .eq('email', user.email.toLowerCase())
               .maybeSingle()
-            currentClientId = clientById?.id
+            clientData = clientByEmail
           }
+          
+          let currentClientId = clientData?.id
 
           if (currentClientId) {
             setClientId(currentClientId)

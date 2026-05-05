@@ -45,12 +45,22 @@ const ClientBookingPage = () => {
     const initData = async () => {
       setLoading(true)
       try {
-        if (user?.email) {
-          const { data: clientData } = await supabase
+        if (user) {
+          let { data: clientData } = await supabase
             .from('clients')
             .select('id')
-            .eq('email', user.email)
+            .eq('user_id', user.id)
             .maybeSingle()
+          
+          if (!clientData && user.email) {
+            const { data: clientByEmail } = await supabase
+              .from('clients')
+              .select('id')
+              .eq('email', user.email.toLowerCase())
+              .maybeSingle()
+            clientData = clientByEmail
+          }
+
           if (clientData) setClientId(clientData.id)
         }
         await fetchData()

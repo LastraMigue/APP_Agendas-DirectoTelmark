@@ -69,11 +69,43 @@ export const authService = {
   },
 
   async createClient(clientData) {
-    const { data, error } = await supabase
+    const { data: { user } } = await supabase.auth.getUser()
+    const userId = user?.id
+
+    // Intentamos buscar si ya existe un cliente con ese email
+    const { data: existingClient } = await supabase
       .from('clients')
-      .insert([clientData])
-      .select()
-    if (error) throw error
+      .select('id')
+      .eq('email', clientData.email.toLowerCase())
+      .maybeSingle()
+
+    let result
+    if (existingClient) {
+      // Si existe, actualizamos su user_id y otros datos
+      const { data, error } = await supabase
+        .from('clients')
+        .update({
+          ...clientData,
+          user_id: userId,
+          email: clientData.email.toLowerCase() // Normalizamos a minúsculas
+        })
+        .eq('id', existingClient.id)
+        .select()
+      if (error) throw error
+      result = data
+    } else {
+      // Si no existe, lo creamos nuevo
+      const { data, error } = await supabase
+        .from('clients')
+        .insert([{
+          ...clientData,
+          user_id: userId,
+          email: clientData.email.toLowerCase() // Normalizamos a minúsculas
+        }])
+        .select()
+      if (error) throw error
+      result = data
+    }
     
     // Actualizamos el nombre en los metadatos de autenticación para que aparezca en el dashboard
     try {
@@ -87,6 +119,6 @@ export const authService = {
       console.warn('No se pudieron actualizar los metadatos del usuario:', updateError)
     }
 
-    return data
+    return result
   }
 }

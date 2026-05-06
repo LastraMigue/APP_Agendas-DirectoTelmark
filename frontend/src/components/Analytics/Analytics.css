@@ -5,8 +5,15 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Stat Cards */
@@ -27,7 +34,9 @@
 .stat-card-premium::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 4px;
   background: linear-gradient(90deg, #3b82f6, #8b5cf6);
   opacity: 0;
@@ -87,7 +96,8 @@
   font-family: inherit;
 }
 
-.recharts-tooltip-item-name, .recharts-tooltip-item-value {
+.recharts-tooltip-item-name,
+.recharts-tooltip-item-value {
   font-weight: 600;
   color: #334155 !important;
 }

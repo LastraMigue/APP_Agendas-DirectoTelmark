@@ -10,7 +10,7 @@ const AnalyticsPage = () => {
           <h1 className="dashboard-title">Dashboard de Analíticas</h1>
           <p className="dashboard-subtitle">Monitoriza el rendimiento, conversión y métricas de todas las citas en tiempo real.</p>
         </div>
-        
+
         <AnalyticsDashboard />
       </div>
     </div>

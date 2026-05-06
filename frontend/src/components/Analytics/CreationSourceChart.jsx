@@ -23,7 +23,7 @@ const CreationSourceChart = ({ data }) => {
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="rgba(255,255,255,0.5)" strokeWidth={2} />
             ))}
           </Pie>
-          <Tooltip cursor={{fill: 'transparent'}} />
+          <Tooltip cursor={{ fill: 'transparent' }} />
           <Legend verticalAlign="bottom" height={36} iconType="circle" />
         </PieChart>
       </ResponsiveContainer>

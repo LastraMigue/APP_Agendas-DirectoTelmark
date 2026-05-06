@@ -18,7 +18,7 @@ const ConversionChart = ({ data }) => {
           <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
           <XAxis type="number" stroke="#64748B" fontSize={12} tickLine={false} axisLine={false} />
           <YAxis dataKey="name" type="category" stroke="#475569" fontSize={12} axisLine={false} tickLine={false} dx={-10} />
-          <Tooltip cursor={{fill: 'rgba(241, 245, 249, 0.5)'}} />
+          <Tooltip cursor={{ fill: 'rgba(241, 245, 249, 0.5)' }} />
           <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={32} animationDuration={1500} animationEasing="ease-out">
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[entry.name] || '#3B82F6'} />

@@ -41,27 +41,27 @@ const AnalyticsDashboard = () => {
     <div className="space-y-8 analytics-dashboard-container">
       {/* KPIs Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title="Total de Citas" 
-          value={data.kpis.totalCitas} 
-          icon={CalendarDays} 
+        <StatCard
+          title="Total de Citas"
+          value={data.kpis.totalCitas}
+          icon={CalendarDays}
         />
-        <StatCard 
-          title="Tasa de Conversión" 
-          value={`${data.kpis.conversionRate}%`} 
+        <StatCard
+          title="Tasa de Conversión"
+          value={`${data.kpis.conversionRate}%`}
           subtitle="Citas confirmadas vs total"
-          icon={TrendingUp} 
+          icon={TrendingUp}
         />
-        <StatCard 
-          title="Tasa de Cancelación" 
-          value={`${data.kpis.cancellationRate}%`} 
-          icon={UserCheck} 
+        <StatCard
+          title="Tasa de Cancelación"
+          value={`${data.kpis.cancellationRate}%`}
+          icon={UserCheck}
         />
-        <StatCard 
-          title="Efec. Recordatorios" 
-          value={`${data.kpis.reminderEffectiveness}%`} 
+        <StatCard
+          title="Efec. Recordatorios"
+          value={`${data.kpis.reminderEffectiveness}%`}
           subtitle="Completadas tras aviso"
-          icon={BellRing} 
+          icon={BellRing}
         />
       </div>
 

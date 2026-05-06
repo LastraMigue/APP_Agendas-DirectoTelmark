@@ -1,11 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from '../context/AuthContext'
 import PrivateRoutes from './PrivateRoutes'
-import LoginPage from '../pages/auth/LoginPage'
-import ClientLoginPage from '../pages/auth/Clientloginform'
-import ClientSelectionPage from '../pages/auth/ClientSelectionPage'
-import ClientSignInPage from '../pages/auth/ClientSignInPage'
-import Inicialpage from '../pages/auth/Inicialpage'
+import LoginPage from '../pages/LoginPage'
+import ClientLoginPage from '../pages/Clientloginform'
+import ClientSelectionPage from '../pages/ClientSelectionPage'
+import ClientSignInPage from '../pages/ClientSignInPage'
+import Inicialpage from '../pages/Inicialpage'
 
 const AppRouter = () => {
   return (

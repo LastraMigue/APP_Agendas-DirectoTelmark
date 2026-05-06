@@ -5,7 +5,7 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import { MainLayout } from '../../layouts/MainLayout'
 import { User, Calendar as CalendarIcon, Crown } from 'lucide-react'
-import { agentsService } from '../../services/supabase/agents.service'
+import { profilesService } from '../../services/supabase/profiles.service'
 import { appointmentsService } from '../../services/supabase/appointments.service'
 import { AuthContext } from '../../context/AuthContext'
 import Loader from '../../components/Loader/Loader'
@@ -63,13 +63,13 @@ const CalendarPage = () => {
   }, [])
 
   useEffect(() => {
-    if (isModalOpen && agents.length > 0) {
+    if (agents.length > 0) {
       setAvailableAgents(agents)
       if (!selectedAgentId) {
         setSelectedAgentId(agents[0].id)
       }
     }
-  }, [isModalOpen, agents])
+  }, [agents])
 
   useEffect(() => {
     if (isModalOpen && selectedDate && selectedAgentId) {
@@ -82,7 +82,7 @@ const CalendarPage = () => {
     try {
       setLoading(true)
       const [fetchedAgents, fetchedAppointments] = await Promise.all([
-        agentsService.getAll(),
+        profilesService.getAgents(),
         appointmentsService.getAll()
       ])
       

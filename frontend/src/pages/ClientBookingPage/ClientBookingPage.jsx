@@ -5,7 +5,7 @@ import interactionPlugin from '@fullcalendar/interaction'
 import esLocale from '@fullcalendar/core/locales/es'
 import { MainLayout } from '../../layouts/MainLayout'
 import { User, Calendar as CalendarIcon, Clock, AlertCircle, CheckCircle2 } from 'lucide-react'
-import { agentsService } from '../../services/supabase/agents.service'
+import { profilesService } from '../../services/supabase/profiles.service'
 import { appointmentsService } from '../../services/supabase/appointments.service'
 import { supabase } from '../../services/supabase/client'
 import { AuthContext } from '../../context/AuthContext'
@@ -46,22 +46,14 @@ const ClientBookingPage = () => {
       setLoading(true)
       try {
         if (user) {
-          let { data: clientData } = await supabase
-            .from('clients')
-            .select('id')
-            .eq('user_id', user.id)
-            .maybeSingle()
-          
-          if (!clientData && user.email) {
-            const { data: clientByEmail } = await supabase
-              .from('clients')
-              .select('id')
-              .eq('email', user.email.toLowerCase())
-              .maybeSingle()
-            clientData = clientByEmail
+          // Buscamos el perfil en la nueva tabla profiles
+          const profile = await profilesService.getById(user.id)
+          if (profile) {
+            setClientId(profile.id)
+          } else if (user.email) {
+            const profileByEmail = await profilesService.getByEmail(user.email)
+            if (profileByEmail) setClientId(profileByEmail.id)
           }
-
-          if (clientData) setClientId(clientData.id)
         }
         await fetchData()
       } catch (error) {
@@ -76,11 +68,11 @@ const ClientBookingPage = () => {
   const fetchData = async () => {
     try {
       const [fetchedAgents, fetchedAppointments] = await Promise.all([
-        agentsService.getAll(),
+        profilesService.getAgents(),
         appointmentsService.getAll()
       ])
       
-      setAgents(fetchedAgents?.filter(a => a.is_active) || [])
+      setAgents(fetchedAgents || [])
       setAppointments(fetchedAppointments || [])
     } catch (error) {
       console.error('Error fetching data:', error)

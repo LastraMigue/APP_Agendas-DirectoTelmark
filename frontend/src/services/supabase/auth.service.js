@@ -24,34 +24,34 @@ export const authService = {
   },
 
   async sendOTP(email, type) {
-    // Si es registro, verificamos que el cliente NO exista
-    if (type === 'registration') {
-      const { data: exists, error: rpcError } = await supabase
-        .rpc('check_client_email_exists', { search_email: email })
-      
-      if (rpcError) {
-        throw new Error('Error al verificar el correo. Intenta de nuevo.')
-      }
+    // Verificamos si el perfil existe en la tabla profiles
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, role')
+      .eq('email', email.toLowerCase())
+      .maybeSingle()
+    
+    if (profileError) throw new Error('Error al verificar el usuario.')
 
-      if (exists) {
-        throw new Error('Ya tienes una cuenta con este correo. Por favor, inicia sesión.')
-      }
+    // Si es registro, verificamos que NO exista
+    if (type === 'registration' && profile) {
+      throw new Error('Ya tienes una cuenta con este correo. Por favor, inicia sesión.')
     }
 
-    // Si es login, verificamos primero que el cliente existe
+    // Si es login, verificamos que exista y que sea cliente
     if (type === 'login') {
-      const { data: exists, error: rpcError } = await supabase
-        .rpc('check_client_email_exists', { search_email: email })
-      
-      if (rpcError || !exists) {
-        throw new Error('El correo no está registrado como cliente.')
+      if (!profile) {
+        throw new Error('El correo no está registrado.')
+      }
+      if (profile.role !== 'client') {
+        throw new Error('Esta entrada es solo para clientes.')
       }
     }
 
     const { data, error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        shouldCreateUser: type === 'registration', // Solo crea usuario en auth.users si es registro
+        shouldCreateUser: type === 'registration', 
       }
     })
     if (error) throw error
@@ -68,55 +68,59 @@ export const authService = {
     return { success: true, data }
   },
 
-  async createClient(clientData) {
+  async createProfile(profileData) {
     const { data: { user } } = await supabase.auth.getUser()
     const userId = user?.id
 
-    // Intentamos buscar si ya existe un cliente con ese email
-    const { data: existingClient } = await supabase
-      .from('clients')
+    // Buscamos si ya existe el perfil por email
+    const { data: existingProfile } = await supabase
+      .from('profiles')
       .select('id')
-      .eq('email', clientData.email.toLowerCase())
+      .eq('email', profileData.email.toLowerCase())
       .maybeSingle()
 
     let result
-    if (existingClient) {
-      // Si existe, actualizamos su user_id y otros datos
+    if (existingProfile) {
+      // Actualizamos
       const { data, error } = await supabase
-        .from('clients')
+        .from('profiles')
         .update({
-          ...clientData,
-          user_id: userId,
-          email: clientData.email.toLowerCase() // Normalizamos a minúsculas
+          ...profileData,
+          id: userId || existingProfile.id, 
+          email: profileData.email.toLowerCase(),
+          role: profileData.role || 'client'
         })
-        .eq('id', existingClient.id)
+        .eq('id', existingProfile.id)
         .select()
+        .single()
       if (error) throw error
       result = data
     } else {
-      // Si no existe, lo creamos nuevo
+      // Creamos
       const { data, error } = await supabase
-        .from('clients')
+        .from('profiles')
         .insert([{
-          ...clientData,
-          user_id: userId,
-          email: clientData.email.toLowerCase() // Normalizamos a minúsculas
+          ...profileData,
+          id: userId,
+          email: profileData.email.toLowerCase(),
+          role: profileData.role || 'client'
         }])
         .select()
+        .single()
       if (error) throw error
       result = data
     }
     
-    // Actualizamos el nombre en los metadatos de autenticación para que aparezca en el dashboard
+    // Actualizamos metadatos de Supabase Auth
     try {
       await supabase.auth.updateUser({
         data: { 
-          full_name: clientData.full_name,
-          role: 'cliente'
+          full_name: profileData.full_name,
+          role: profileData.role || 'client'
         }
       })
     } catch (updateError) {
-      console.warn('No se pudieron actualizar los metadatos del usuario:', updateError)
+      console.warn('No se pudieron actualizar los metadatos:', updateError)
     }
 
     return result

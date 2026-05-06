@@ -14,51 +14,33 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      if (user && !user.user_metadata?.full_name) {
-        try {
-          // Intentar buscar en clientes (primero por user_id, luego por email)
-          let { data: client } = await supabase
-            .from('clients')
-            .select('full_name')
-            .eq('user_id', user.id)
-            .maybeSingle()
-          
-          if (!client && user.email) {
-            const { data: clientByEmail } = await supabase
-              .from('clients')
-              .select('full_name')
-              .eq('email', user.email.toLowerCase())
-              .maybeSingle()
-            client = clientByEmail
-          }
-          
-          if (client) {
-            setDisplayName(client.full_name)
-            // Actualizar metadatos para la próxima vez
-            await supabase.auth.updateUser({
-              data: { full_name: client.full_name, role: 'cliente' }
-            })
-            return
-          }
+      if (!user) return
 
-          // Si no es cliente, intentar buscar en perfiles (agentes/admin)
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name, role')
-            .eq('id', user.id)
-            .maybeSingle()
-          
-          if (profile) {
-            setDisplayName(profile.full_name)
-            await supabase.auth.updateUser({
-              data: { full_name: profile.full_name, role: profile.role }
-            })
-          }
-        } catch (error) {
-          console.error('Error al recuperar datos del perfil:', error)
-        }
-      } else if (user?.user_metadata?.full_name) {
+      // Si ya tenemos el nombre en los metadatos, lo usamos
+      if (user.user_metadata?.full_name) {
         setDisplayName(user.user_metadata.full_name)
+        return
+      }
+
+      try {
+        // Buscar en la tabla unificada de profiles
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('full_name, role')
+          .eq('id', user.id)
+          .maybeSingle()
+        
+        if (error) throw error
+
+        if (profile) {
+          setDisplayName(profile.full_name)
+          // Actualizar metadatos para persistir localmente
+          await supabase.auth.updateUser({
+            data: { full_name: profile.full_name, role: profile.role }
+          })
+        }
+      } catch (error) {
+        console.error('Error al recuperar datos del perfil:', error)
       }
     }
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import LoginForm from '../../components/LoginForm'
 import useAuth from '../../hooks/useAuth'
+import './LoginPage.css'
 
 const LoginPage = () => {
   const { isAuthenticated, signOut, loading } = useAuth()

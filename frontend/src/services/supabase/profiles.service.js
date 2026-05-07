@@ -78,5 +78,15 @@ export const profilesService = {
     }
     
     return this.create({ ...clientData, role: 'client' })
+  },
+
+  async delete(id) {
+    const { error, count } = await supabase
+      .from('profiles')
+      .delete({ count: 'exact' })
+      .eq('id', id)
+    
+    if (error) throw error
+    return count
   }
 }

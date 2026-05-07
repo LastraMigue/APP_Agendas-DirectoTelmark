@@ -1,82 +1,62 @@
 import { supabase } from './client'
 
 export const profilesService = {
-  async getAll() {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('full_name', { ascending: true })
-    if (error) throw error
-    return data
-  },
-
-  async getByRole(role) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('role', role)
-      .order('full_name', { ascending: true })
-    if (error) throw error
-    return data
-  },
-
+  // OBTENER AGENTES
   async getAgents() {
-    return this.getByRole('agent')
-  },
-
-  async getClients() {
-    return this.getByRole('client')
-  },
-
-  async getById(id) {
     const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('role', 'agent')
+      .order('full_name', { ascending: true })
+    if (error) {
+      console.error('Error al cargar agentes:', error.message)
+      return []
+    }
+    return data || []
+  },
+
+  // OBTENER CLIENTES
+  async getClients() {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('role', 'client')
+      .order('full_name', { ascending: true })
+    if (error) {
+      console.error('Error al cargar clientes:', error.message)
+      return []
+    }
+    return data || []
+  },
+
+  // BÚSQUEDAS POR ID / EMAIL
+  async getById(id) {
+    const { data } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', id)
-      .single()
-    if (error) throw error
-    return data
+      .maybeSingle()
+    return data || null
   },
 
   async getByEmail(email) {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('profiles')
       .select('*')
       .eq('email', email)
       .maybeSingle()
-    if (error) throw error
-    return data
+    return data || null
   },
 
-  async create(profile) {
+  // ACTUALIZAR PERFIL
+  async update(id, updates) {
     const { data, error } = await supabase
       .from('profiles')
-      .insert(profile)
-      .select()
-      .single()
-    if (error) throw error
-    return data
-  },
-
-  async update(id, profile) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .update(profile)
+      .update(updates)
       .eq('id', id)
       .select()
       .single()
     if (error) throw error
     return data
-  },
-
-  async upsertClient(clientData) {
-    // Buscar si ya existe un cliente con ese email
-    const existing = await this.getByEmail(clientData.email)
-    
-    if (existing) {
-      return this.update(existing.id, { ...clientData, role: 'client' })
-    }
-    
-    return this.create({ ...clientData, role: 'client' })
   }
 }

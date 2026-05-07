@@ -72,6 +72,7 @@ const ClientBookingPage = () => {
         appointmentsService.getAll()
       ])
       
+      console.log('Agentes cargados para el cliente:', fetchedAgents)
       setAgents(fetchedAgents || [])
       setAppointments(fetchedAppointments || [])
     } catch (error) {

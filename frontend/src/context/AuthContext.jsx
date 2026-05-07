@@ -25,7 +25,15 @@ export const AuthProvider = ({ children }) => {
     const initAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
-        setUser(session?.user ?? null)
+        if (session?.user) {
+          setUser(session.user)
+        } else {
+          // Si no hay sesión real, buscamos un usuario mock guardado
+          const savedUser = localStorage.getItem('sb-mock-user')
+          if (savedUser) {
+            setUser(JSON.parse(savedUser))
+          }
+        }
       } catch (err) {
         console.error('Error al obtener sesión:', err)
         setError(err.message)
@@ -37,7 +45,13 @@ export const AuthProvider = ({ children }) => {
     initAuth()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+      if (session?.user) {
+        setUser(session.user)
+      } else if (!_event.includes('SIGNED_OUT')) {
+        // No borrar si es un refresh y hay mock user
+        const savedUser = localStorage.getItem('sb-mock-user')
+        if (savedUser) setUser(JSON.parse(savedUser))
+      }
     })
 
     return () => subscription.unsubscribe()
@@ -55,6 +69,7 @@ export const AuthProvider = ({ children }) => {
         user_metadata: { full_name: 'Administrador Test', role: 'admin' },
         role: 'authenticated'
       }
+      localStorage.setItem('sb-mock-user', JSON.stringify(mockUser))
       setUser(mockUser)
       setLoading(false)
       return { user: mockUser, session: { access_token: 'mock-token' } }
@@ -68,6 +83,7 @@ export const AuthProvider = ({ children }) => {
         user_metadata: { full_name: 'Agente 007', role: 'agente' },
         role: 'authenticated'
       }
+      localStorage.setItem('sb-mock-user', JSON.stringify(mockUser))
       setUser(mockUser)
       setLoading(false)
       return { user: mockUser, session: { access_token: 'mock-agent-007-token' } }
@@ -119,10 +135,11 @@ export const AuthProvider = ({ children }) => {
     setError(null)
     try {
       await authService.signOut()
+      localStorage.removeItem('sb-mock-user')
       setUser(null)
     } catch (err) {
-      setError(err.message)
-      throw err
+      localStorage.removeItem('sb-mock-user')
+      setUser(null)
     } finally {
       setLoading(false)
     }

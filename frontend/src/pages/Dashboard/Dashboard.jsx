@@ -2,6 +2,8 @@ import { useContext, useState, useEffect } from 'react'
 import { MainLayout } from '../../layouts/MainLayout'
 import { AuthContext } from '../../context/AuthContext'
 import DashboardActions from '../../components/DashboardActions'
+import AgentSummary from '../../components/AgentSummary/AgentSummary'
+import ClientSummary from '../../components/ClientSummary/ClientSummary'
 import { supabase } from '../../services/supabase/client'
 import './Dashboard.css'
 
@@ -58,6 +60,14 @@ const Dashboard = () => {
             Bienvenido de nuevo, <span className="highlight">{userName}</span>. ¿Qué quieres hacer hoy?
           </p>
         </header>
+
+        {(userRole === 'agent' || userRole === 'agente') && user && (
+          <AgentSummary user={user} />
+        )}
+
+        {(userRole === 'client' || userRole === 'cliente') && user && (
+          <ClientSummary user={user} />
+        )}
 
         <DashboardActions userRole={userRole} />
       </div>

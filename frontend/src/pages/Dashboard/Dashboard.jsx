@@ -61,7 +61,7 @@ const Dashboard = () => {
           </p>
         </header>
 
-        {(userRole === 'agent' || userRole === 'agente') && user && (
+        {(userRole === 'agent' || userRole === 'agente' || userRole === 'admin') && user && (
           <AgentSummary user={user} />
         )}
 

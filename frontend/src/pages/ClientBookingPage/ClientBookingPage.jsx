@@ -67,16 +67,20 @@ const ClientBookingPage = () => {
 
   const fetchData = async () => {
     try {
+      console.log('Cargando agentes y citas...');
       const [fetchedAgents, fetchedAppointments] = await Promise.all([
         profilesService.getAgents(),
         appointmentsService.getAll()
       ])
       
-      console.log('Agentes cargados para el cliente:', fetchedAgents)
+      console.log('Datos cargados:', { 
+        agentes: fetchedAgents?.length, 
+        citas: fetchedAppointments?.length 
+      })
       setAgents(fetchedAgents || [])
       setAppointments(fetchedAppointments || [])
     } catch (error) {
-      console.error('Error fetching data:', error)
+      console.error('ERROR AL CARGAR DATOS (500?):', error)
     }
   }
 
@@ -170,28 +174,9 @@ const ClientBookingPage = () => {
   const handleConfirmBooking = async () => {
     if (!selectedAgentId || !selectedDate || !selectedSlot) return
 
-    // REQUERIMIENTO: Solo una reserva por día (fecha de creación)
-    // El usuario no puede coger una cita hoy si ya ha pillado una hoy (independientemente del día de la cita)
-    const todayStr = getLocalDateString(new Date())
-    const alreadyBookedSomethingToday = appointments.some(app => 
-      app.client_id === clientId && 
-      getLocalDateString(new Date(app.created_at)) === todayStr &&
-      app.status !== 'cancelled'
-    )
-
-    if (alreadyBookedSomethingToday) {
-      alert('Ya has realizado una reserva hoy. Solo se permite realizar una gestión de reserva al día.')
-      return
-    }
-
-    // REQUERIMIENTO: Solo una cita por día de calendario (día de la cita)
-    const dateStr = getLocalDateString(selectedDate)
-    const alreadyHasAppOnThatDay = myAppointments.some(app => getLocalDateString(new Date(app.start_time)) === dateStr)
-    
-    if (alreadyHasAppOnThatDay) {
-      alert('Ya tienes una cita programada para este día.')
-      return
-    }
+    // Restricciones eliminadas por petición del usuario: 
+    // - Ya se puede reservar más de una vez al día.
+    // - Ya se pueden tener varias citas en el mismo día de calendario.
 
     try {
       setIsSubmitting(true)
@@ -305,23 +290,9 @@ const ClientBookingPage = () => {
                 <h3>Reservar Cita</h3>
                 <div className="reservation-details">
                   <p><strong>Fecha:</strong> {selectedDate?.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                  
-                  {selectedDayAppointments.length > 0 && (
-                    <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#ecfdf5', borderRadius: '4px', border: '1px solid #10B981' }}>
-                      <p style={{ color: '#065f46', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600' }}>
-                        <AlertCircle size={16} /> Ya tienes una cita hoy:
-                      </p>
-                      {selectedDayAppointments.map(app => (
-                        <p key={app.id} style={{ margin: '0.25rem 0 0 1.5rem', fontSize: '0.9rem' }}>
-                          {new Date(app.start_time).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} - {app.title}
-                        </p>
-                      ))}
-                    </div>
-                  )}
                 </div>
                 
-                {selectedDayAppointments.length === 0 ? (
-                  <div className="reservation-form">
+                <div className="reservation-form">
                     <label>Selecciona un Agente:</label>
                     <select 
                       value={selectedAgentId} 
@@ -368,11 +339,9 @@ const ClientBookingPage = () => {
                       </>
                     )}
                   </div>
-                ) : (
                   <p style={{ textAlign: 'center', color: '#666', margin: '2rem 0' }}>
-                    Solo se permite una cita por día. Por favor selecciona otra fecha.
+                    Selecciona un agente y una hora para continuar.
                   </p>
-                )}
 
                 <div className="reservation-actions">
                   <button 
@@ -382,15 +351,13 @@ const ClientBookingPage = () => {
                   >
                     Cerrar
                   </button>
-                  {selectedDayAppointments.length === 0 && (
-                    <button 
-                      className="btn-confirm" 
-                      onClick={handleConfirmBooking}
-                      disabled={!selectedSlot || isSubmitting}
-                    >
-                      {isSubmitting ? 'Reservando...' : 'Confirmar Reserva'}
-                    </button>
-                  )}
+                  <button 
+                    className="btn-confirm" 
+                    onClick={handleConfirmBooking}
+                    disabled={!selectedSlot || isSubmitting}
+                  >
+                    {isSubmitting ? 'Reservando...' : 'Confirmar Reserva'}
+                  </button>
                 </div>
               </>
             )}

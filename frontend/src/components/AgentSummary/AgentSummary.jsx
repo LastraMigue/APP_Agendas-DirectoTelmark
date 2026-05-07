@@ -18,14 +18,17 @@ const AgentSummary = ({ user }) => {
         
         const userId = user?.id;
         const userEmail = user?.email?.toLowerCase();
-
-        console.log('DEBUG - Email Agente:', userEmail);
-        if (all.length > 0) {
-          console.log('DEBUG - Estructura Cita 1 (Agente):', all[0]);
-        }
+        const userRole = user?.user_metadata?.role;
+        const now = new Date();
 
         const filtered = all
           .filter(app => {
+            const appStartTime = new Date(app.start_time || app.start);
+            
+            // 1. Solo mostrar citas que no han pasado (o están ocurriendo ahora)
+            if (appStartTime < now) return false;
+
+            // 2. Filtrar por el usuario actual (sea Agente o Admin)
             const appAgentEmail = app.agent_email?.toLowerCase();
             const appEmail = app.email?.toLowerCase();
 
@@ -37,7 +40,6 @@ const AgentSummary = ({ user }) => {
           .sort((a, b) => new Date(a.start_time || a.start) - new Date(b.start_time || b.start))
           .slice(0, 3);
         
-        console.log('DEBUG - Citas filtradas:', filtered);
         setAppointments(filtered);
       } catch (error) {
         console.error('Error fetching summary:', error);
@@ -60,7 +62,11 @@ const AgentSummary = ({ user }) => {
       <div className="summary-header">
         <h3><Calendar size={20} /> Próximas Citas</h3>
       </div>
-      <p className="empty-msg">No tienes citas programadas próximamente.</p>
+      <p className="empty-msg">
+        {user?.user_metadata?.role === 'admin' 
+          ? 'No hay citas programadas en el sistema próximamente.' 
+          : 'No tienes citas programadas próximamente.'}
+      </p>
     </div>
   );
 

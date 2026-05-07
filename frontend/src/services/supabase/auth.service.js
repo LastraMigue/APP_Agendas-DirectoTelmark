@@ -23,106 +23,44 @@ export const authService = {
     return user
   },
 
-  async sendOTP(email, type) {
-    // Verificamos si el perfil existe en la tabla profiles
+  async sendOTP(email) {
+    // 1. Validar que el usuario existe y es CLIENTE antes de enviar nada
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, role')
+      .select('role')
       .eq('email', email.toLowerCase())
       .maybeSingle()
+
+    if (profileError) throw new Error('Error al verificar el perfil.')
     
-    if (profileError) throw new Error('Error al verificar el usuario.')
-
-    // Si es registro, verificamos que NO exista
-    if (type === 'registration' && profile) {
-      throw new Error('Ya tienes una cuenta con este correo. Por favor, inicia sesión.')
+    if (!profile) {
+      throw new Error('El correo no está registrado como cliente. Por favor, contacta con un agente.')
     }
 
-    // Si es login, verificamos que exista y que sea cliente
-    if (type === 'login') {
-      if (!profile) {
-        throw new Error('El correo no está registrado.')
-      }
-      if (profile.role !== 'client') {
-        throw new Error('Esta entrada es solo para clientes.')
-      }
+    if (profile.role !== 'client') {
+      throw new Error('Este acceso es exclusivo para clientes.')
     }
 
-    const { data, error } = await supabase.auth.signInWithOtp({
+    // 2. Enviar OTP
+    const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        shouldCreateUser: type === 'registration', 
-      }
+        shouldCreateUser: true,
+        emailRedirectTo: window.location.origin,
+      },
     })
+    
     if (error) throw error
-    return data
+    return true
   },
 
   async verifyOTP(email, token) {
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token,
-      type: 'email'
+      type: 'magiclink'
     })
     if (error) throw error
     return { success: true, data }
-  },
-
-  async createProfile(profileData) {
-    const { data: { user } } = await supabase.auth.getUser()
-    const userId = user?.id
-
-    // Buscamos si ya existe el perfil por email
-    const { data: existingProfile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', profileData.email.toLowerCase())
-      .maybeSingle()
-
-    let result
-    if (existingProfile) {
-      // Actualizamos
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({
-          ...profileData,
-          id: userId || existingProfile.id, 
-          email: profileData.email.toLowerCase(),
-          role: profileData.role || 'client'
-        })
-        .eq('id', existingProfile.id)
-        .select()
-        .single()
-      if (error) throw error
-      result = data
-    } else {
-      // Creamos
-      const { data, error } = await supabase
-        .from('profiles')
-        .insert([{
-          ...profileData,
-          id: userId,
-          email: profileData.email.toLowerCase(),
-          role: profileData.role || 'client'
-        }])
-        .select()
-        .single()
-      if (error) throw error
-      result = data
-    }
-    
-    // Actualizamos metadatos de Supabase Auth
-    try {
-      await supabase.auth.updateUser({
-        data: { 
-          full_name: profileData.full_name,
-          role: profileData.role || 'client'
-        }
-      })
-    } catch (updateError) {
-      console.warn('No se pudieron actualizar los metadatos:', updateError)
-    }
-
-    return result
   }
 }

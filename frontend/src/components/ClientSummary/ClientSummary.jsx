@@ -33,8 +33,12 @@ const ClientSummary = ({ user }) => {
         }));
         console.log('DEBUG - Datos en DB:', dbEmails);
 
+        const now = new Date();
         const filtered = all
           .filter(app => {
+            const appStartTime = new Date(app.start_time || app.start);
+            if (appStartTime < now) return false;
+
             const appClientEmail = app.client_email?.toLowerCase();
             const appAgentEmail = app.agent_email?.toLowerCase();
             const appEmail = app.email?.toLowerCase();
@@ -71,9 +75,6 @@ const ClientSummary = ({ user }) => {
         <h3><Calendar size={20} /> Mis Próximas Citas</h3>
       </div>
       <p className="empty-msg">No tienes citas programadas próximamente.</p>
-      <button className="book-now-btn" onClick={() => navigate('/dashboard/appointments/book')}>
-        Reservar una cita ahora
-      </button>
     </div>
   );
 

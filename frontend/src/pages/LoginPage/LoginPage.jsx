@@ -38,19 +38,7 @@ const LoginPage = () => {
         <LoginForm />
 
         <div className="login-footer">
-          <div className="test-credentials-container">
-            <p className="test-credentials-title"><strong>Acceso de Prueba:</strong></p>
-            <div className="test-credentials-grid">
-              <div className="test-credential-item">
-                <span className="label">Admin:</span>
-                <code>admin@test.com / password123</code>
-              </div>
-              <div className="test-credential-item">
-                <span className="label">Agente:</span>
-                <code>agente007@test.com / 007007</code>
-              </div>
-            </div>
-          </div>
+          <p>© 2025 Directo Telmark. Todos los derechos reservados.</p>
         </div>
       </div>
     </div>

@@ -5,8 +5,8 @@ export const profilesService = {
   async getAgents() {
     const { data, error } = await supabase
       .from('profiles')
-      .select('*')
-      .eq('role', 'agent')
+      .select('id, role, full_name, email')
+      .in('role', ['agent', 'admin'])
       .order('full_name', { ascending: true })
     if (error) {
       console.error('Error al cargar agentes:', error.message)

@@ -48,6 +48,21 @@ export const profilesService = {
     return data || null
   },
 
+  // CREAR PERFIL
+  async create(profile) {
+    const newProfile = {
+      id: profile.id || crypto.randomUUID(), // Generar UUID si no existe
+      ...profile
+    }
+    const { data, error } = await supabase
+      .from('profiles')
+      .insert([newProfile])
+      .select()
+      .single()
+    if (error) throw error
+    return data
+  },
+
   // ACTUALIZAR PERFIL
   async update(id, updates) {
     const { data, error } = await supabase

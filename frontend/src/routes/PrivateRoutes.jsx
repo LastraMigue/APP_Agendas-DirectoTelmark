@@ -10,6 +10,8 @@ import ClientBookingPage from '../pages/ClientBookingPage'
 import AgentAppointmentsPage from '../pages/AgentAppointmentsPage'
 import ClientAppointmentsPage from '../pages/ClientAppointmentsPage'
 import ManageClientsPage from '../pages/ManageClientsPage/ManageClientsPage'
+import AnalyticsPage from '../pages/AnalyticsPage/AnalyticsPage'
+import ManageAgentsPage from '../pages/ManageAgentsPage/ManageAgentsPage'
 
 const PrivateRoutes = () => {
   const { isAuthenticated, loading } = useAuth()
@@ -40,11 +42,13 @@ const PrivateRoutes = () => {
       <Route path="appointments/history" element={<AgentAppointmentsPage />} />
       <Route path="my-appointments" element={<ClientAppointmentsPage />} />
       <Route path="calendar" element={<CalendarPage />} />
+      <Route path="analytics" element={<AnalyticsPage />} />
       <Route path="clients" element={<ManageClientsPage />} />
       <Route path="clients/new" element={<ManageClientsPage />} />
-      <Route path="agents" element={<ManageClientsPage />} />
-      <Route path="reports" element={<ManageClientsPage />} />
+      <Route path="agents" element={<ManageAgentsPage />} />
+      <Route path="reports" element={<AnalyticsPage />} />
       <Route path="settings" element={<ManageClientsPage />} />
+
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )

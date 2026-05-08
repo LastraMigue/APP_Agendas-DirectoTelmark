@@ -75,6 +75,25 @@ export const profilesService = {
     return data
   },
 
+  async ensureProfileForUser(authUser) {
+    if (!authUser) return null
+    try {
+      const existing = await this.getById(authUser.id)
+      if (existing) return existing
+
+      // Si no existe, creamos el perfil inicial
+      return await this.create({
+        id: authUser.id,
+        email: authUser.email,
+        full_name: authUser.user_metadata?.full_name || authUser.email,
+        role: authUser.user_metadata?.role || 'client'
+      })
+    } catch (err) {
+      console.error('Error en ensureProfileForUser:', err)
+      return null
+    }
+  },
+
   async upsertClient(clientData) {
     // Buscar si ya existe un cliente con ese email
     const existing = await this.getByEmail(clientData.email)
@@ -96,3 +115,4 @@ export const profilesService = {
     return count
   }
 }
+

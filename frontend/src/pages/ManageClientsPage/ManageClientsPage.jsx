@@ -18,7 +18,6 @@ const ManageClientsPage = () => {
   const fetchClients = useCallback(async () => {
     try {
       setLoading(true)
-      // Usar el servicio para mayor consistencia
       const data = await profilesService.getClients()
       setClients(data || [])
       setFilteredClients(data || [])
@@ -56,6 +55,7 @@ const ManageClientsPage = () => {
     try {
       console.log('Intentando eliminar cliente ID:', id)
       const count = await profilesService.delete(id)
+
       
       if (count === 0) {
         setError('No se pudo eliminar el cliente. Es posible que no tengas permisos (RLS) o que el cliente ya no exista.')

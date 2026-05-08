@@ -47,6 +47,12 @@ export const AuthProvider = ({ children }) => {
           console.log('Usuario detectado, sincronizando perfil...');
           await syncProfile(session.user)
           setUser(session.user)
+        } else {
+          // Si no hay sesión real, buscamos un usuario mock guardado
+          const savedUser = localStorage.getItem('sb-mock-user')
+          if (savedUser) {
+            setUser(JSON.parse(savedUser))
+          }
         }
         console.log('Inicialización de auth completada.');
       } catch (err) {
@@ -67,6 +73,10 @@ export const AuthProvider = ({ children }) => {
         setUser(null)
       } else if (session?.user) {
         setUser(session.user)
+      } else if (!event.includes('SIGNED_OUT')) {
+        // No borrar si es un refresh y hay mock user
+        const savedUser = localStorage.getItem('sb-mock-user')
+        if (savedUser) setUser(JSON.parse(savedUser))
       }
       setLoading(false)
     })
@@ -77,6 +87,34 @@ export const AuthProvider = ({ children }) => {
   const signIn = useCallback(async (email, password) => {
     setLoading(true)
     setError(null)
+
+    // Credenciales de prueba — Admin/Supervisor
+    if (email === 'admin@test.com' && password === 'password123') {
+      const mockUser = {
+        id: 'test-admin-id',
+        email: 'admin@test.com',
+        user_metadata: { full_name: 'Administrador Test', role: 'admin' },
+        role: 'authenticated'
+      }
+      localStorage.setItem('sb-mock-user', JSON.stringify(mockUser))
+      setUser(mockUser)
+      setLoading(false)
+      return { user: mockUser, session: { access_token: 'mock-token' } }
+    }
+
+    // Credenciales de prueba — Agente Especial
+    if (email === 'agente007@test.com' && password === '007007') {
+      const mockUser = {
+        id: 'test-agent-007',
+        email: 'agente007@test.com',
+        user_metadata: { full_name: 'Agente 007', role: 'agente' },
+        role: 'authenticated'
+      }
+      localStorage.setItem('sb-mock-user', JSON.stringify(mockUser))
+      setUser(mockUser)
+      setLoading(false)
+      return { user: mockUser, session: { access_token: 'mock-agent-007-token' } }
+    }
 
     if (!isConfigured) {
       setLoading(false)
@@ -135,13 +173,16 @@ export const AuthProvider = ({ children }) => {
     setLoading(true)
     try {
       await authService.signOut()
+      localStorage.removeItem('sb-mock-user')
       setUser(null)
     } catch (err) {
+      localStorage.removeItem('sb-mock-user')
       setUser(null)
     } finally {
       setLoading(false)
     }
   }, [])
+
 
   const clearError = useCallback(() => {
     setError(null)

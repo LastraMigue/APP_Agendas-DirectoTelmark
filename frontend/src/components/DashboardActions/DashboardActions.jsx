@@ -21,9 +21,9 @@ const DashboardActions = ({ userRole }) => {
     ]
 
     const adminActions = [
-      { id: 'agents', title: 'Gestión de Agentes', icon: <Users size={24} />, path: '/admin/agents', desc: 'Administra el equipo y permisos' },
-      { id: 'reports', title: 'Reportes y Métricas', icon: <BarChart3 size={24} />, path: '/admin/reports', desc: 'Analiza el rendimiento global' },
-      { id: 'settings', title: 'Configuración', icon: <Settings size={24} />, path: '/admin/settings', desc: 'Ajustes generales del sistema' },
+      { id: 'agents', title: 'Gestión de Agentes', icon: <Users size={24} />, path: '/dashboard/agents', desc: 'Administra el equipo y permisos' },
+      { id: 'reports', title: 'Reportes y Métricas', icon: <BarChart3 size={24} />, path: '/dashboard/analytics', desc: 'Analiza el rendimiento global' },
+      { id: 'settings', title: 'Configuración', icon: <Settings size={24} />, path: '/dashboard/settings', desc: 'Ajustes generales del sistema' },
     ]
 
     const agentActions = [

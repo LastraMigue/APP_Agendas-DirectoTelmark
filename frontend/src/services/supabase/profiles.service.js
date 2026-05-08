@@ -31,12 +31,24 @@ export const profilesService = {
 
   // BÚSQUEDAS POR ID / EMAIL
   async getById(id) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle()
-    return data || null
+    console.log('DEBUG: profilesService.getById empezando para ID:', id);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle()
+      
+      if (error) {
+        console.error('DEBUG: Error en getById:', error);
+        throw error;
+      }
+      console.log('DEBUG: profilesService.getById terminado. Encontrado:', !!data);
+      return data || null
+    } catch (err) {
+      console.error('DEBUG: Excepción en getById:', err);
+      return null;
+    }
   },
 
   async getByEmail(email) {
@@ -50,6 +62,7 @@ export const profilesService = {
 
   // CREAR PERFIL
   async create(profile) {
+    console.log('DEBUG: profilesService.create empezando', profile);
     const newProfile = {
       id: profile.id || crypto.randomUUID(), // Generar UUID si no existe
       ...profile
@@ -59,7 +72,11 @@ export const profilesService = {
       .insert([newProfile])
       .select()
       .single()
-    if (error) throw error
+    if (error) {
+      console.error('DEBUG: Error en create:', error);
+      throw error
+    }
+    console.log('DEBUG: profilesService.create terminado');
     return data
   },
 
@@ -77,10 +94,15 @@ export const profilesService = {
 
   async ensureProfileForUser(authUser) {
     if (!authUser) return null
+    console.log('DEBUG: ensureProfileForUser empezando para:', authUser.email);
     try {
       const existing = await this.getById(authUser.id)
-      if (existing) return existing
+      if (existing) {
+        console.log('DEBUG: Perfil existente encontrado');
+        return existing
+      }
 
+      console.log('DEBUG: Perfil no encontrado, creando...');
       // Si no existe, creamos el perfil inicial
       return await this.create({
         id: authUser.id,
@@ -93,6 +115,7 @@ export const profilesService = {
       return null
     }
   },
+
 
   async upsertClient(clientData) {
     // Buscar si ya existe un cliente con ese email

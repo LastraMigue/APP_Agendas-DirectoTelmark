@@ -35,8 +35,10 @@ export const AuthProvider = ({ children }) => {
 
     const initAuth = async () => {
       try {
+        console.log('DEBUG: initAuth empezando');
         console.log('Iniciando verificación de sesión...');
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        console.log('DEBUG: getSession terminado', { session: !!session, error: sessionError });
         
         if (sessionError) {
           console.error('Error al obtener sesión de Supabase Auth:', sessionError);
@@ -44,13 +46,15 @@ export const AuthProvider = ({ children }) => {
         }
 
         if (session?.user) {
-          console.log('Usuario detectado, sincronizando perfil...');
-          await syncProfile(session.user)
+          console.log('Usuario detectado, sincronizando perfil (background)...');
+          // No esperamos a syncProfile para no bloquear la carga inicial
+          syncProfile(session.user).then(() => console.log('DEBUG: syncProfile (bg) terminado'));
           setUser(session.user)
         } else {
-          // Si no hay sesión real, buscamos un usuario mock guardado
+          console.log('DEBUG: No hay sesión de Supabase, buscando mock user');
           const savedUser = localStorage.getItem('sb-mock-user')
           if (savedUser) {
+            console.log('DEBUG: Mock user encontrado');
             setUser(JSON.parse(savedUser))
           }
         }
@@ -59,30 +63,39 @@ export const AuthProvider = ({ children }) => {
         console.error('ERROR CRÍTICO EN INICIALIZACIÓN:', err)
         setError(err.message)
       } finally {
+        console.log('DEBUG: initAuth terminado (finally)');
         setLoading(false)
       }
     }
 
     initAuth()
 
+    console.log('DEBUG: Configurando onAuthStateChange');
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('DEBUG: onAuthStateChange evento:', event);
       if (event === 'SIGNED_IN' && session?.user) {
-        await syncProfile(session.user)
+        // No esperamos a syncProfile para no bloquear el cambio de estado
+        syncProfile(session.user).then(() => console.log('DEBUG: syncProfile (bg-event) terminado'));
         setUser(session.user)
       } else if (event === 'SIGNED_OUT') {
         setUser(null)
       } else if (session?.user) {
         setUser(session.user)
       } else if (!event.includes('SIGNED_OUT')) {
-        // No borrar si es un refresh y hay mock user
         const savedUser = localStorage.getItem('sb-mock-user')
         if (savedUser) setUser(JSON.parse(savedUser))
       }
+      console.log('DEBUG: onAuthStateChange finalizado (seteando loading=false)');
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+
+    return () => {
+      console.log('DEBUG: Limpiando AuthContext useEffect');
+      subscription.unsubscribe()
+    }
   }, [syncProfile])
+
 
   const signIn = useCallback(async (email, password) => {
     setLoading(true)

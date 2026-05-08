@@ -67,12 +67,13 @@ const ClientLoginForm = () => {
     try {
       const result = await authService.verifyOTP(email, data.otp)
       if (result.success) {
-        // Ahora que el email está verificado, guardamos los datos del cliente
+        // Ahora que el email está verificado, guardamos los datos del perfil
         const formData = getValues()
-        await authService.createClient({
+        await authService.createProfile({
           full_name: formData.name,
           email: formData.email,
-          phone: formData.phone
+          phone: formData.phone,
+          role: 'client'
         })
         navigate('/dashboard')
       }

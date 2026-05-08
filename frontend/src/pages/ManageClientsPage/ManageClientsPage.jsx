@@ -53,7 +53,9 @@ const ManageClientsPage = () => {
     setSuccess('')
 
     try {
+      console.log('Intentando eliminar cliente ID:', id)
       const count = await profilesService.delete(id)
+
       
       if (count === 0) {
         setError('No se pudo eliminar el cliente. Es posible que no tengas permisos (RLS) o que el cliente ya no exista.')

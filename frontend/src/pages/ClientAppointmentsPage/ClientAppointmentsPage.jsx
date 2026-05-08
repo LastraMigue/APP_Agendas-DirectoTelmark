@@ -3,7 +3,7 @@ import { MainLayout } from '../../layouts/MainLayout'
 import { AuthContext } from '../../context/AuthContext'
 import { supabase } from '../../services/supabase/client'
 import { appointmentsService } from '../../services/supabase/appointments.service'
-import { agentsService } from '../../services/supabase/agents.service'
+import { profilesService } from '../../services/supabase/profiles.service'
 import { Calendar, Clock, CheckCircle2, XCircle, AlertCircle, CalendarDays, UserSquare2 } from 'lucide-react'
 import Loader from '../../components/Loader/Loader'
 import '../AgentAppointmentsPage/AgentAppointmentsPage.css' // Reusing the same CSS for consistent UI
@@ -21,38 +21,40 @@ const ClientAppointmentsPage = () => {
       setLoading(true)
       try {
         if (user) {
-          // Find client id (prioritize user_id link)
-          let { data: clientData } = await supabase
-            .from('clients')
+          // Buscamos el perfil en la nueva tabla profiles
+          let { data: profileData } = await supabase
+            .from('profiles')
             .select('id')
-            .eq('user_id', user.id)
+            .eq('id', user.id)
+            .eq('role', 'client')
             .maybeSingle()
           
-          if (!clientData && user.email) {
-            // Fallback: Check by email
-            const { data: clientByEmail } = await supabase
-              .from('clients')
+          if (!profileData && user.email) {
+            // Si no lo encuentra por ID (común tras migración), buscamos por email
+            const { data: profileByEmail } = await supabase
+              .from('profiles')
               .select('id')
               .eq('email', user.email.toLowerCase())
+              .eq('role', 'client')
               .maybeSingle()
-            clientData = clientByEmail
+            profileData = profileByEmail
           }
           
-          let currentClientId = clientData?.id
+          let currentClientId = profileData?.id
 
           if (currentClientId) {
             setClientId(currentClientId)
             const [allAppointments, allAgents] = await Promise.all([
               appointmentsService.getAll(),
-              agentsService.getAll()
+              profilesService.getAgents()
             ])
             
-            // Filter appointments for this client
+            // Filtramos citas para este cliente
             const clientAppointments = allAppointments.filter(app => app.client_id === currentClientId)
             setAppointments(clientAppointments)
             setAgents(allAgents)
           } else {
-            console.warn('No client record found for this user.')
+            console.warn('No se encontró un perfil de cliente para este usuario.')
           }
         }
       } catch (error) {

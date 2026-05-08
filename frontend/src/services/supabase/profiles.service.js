@@ -5,8 +5,8 @@ export const profilesService = {
   async getAgents() {
     const { data, error } = await supabase
       .from('profiles')
-      .select('*')
-      .eq('role', 'agent')
+      .select('id, role, full_name, email')
+      .in('role', ['agent', 'admin'])
       .order('full_name', { ascending: true })
     if (error) {
       console.error('Error al cargar agentes:', error.message)
@@ -31,12 +31,24 @@ export const profilesService = {
 
   // BÚSQUEDAS POR ID / EMAIL
   async getById(id) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle()
-    return data || null
+    console.log('DEBUG: profilesService.getById empezando para ID:', id);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle()
+      
+      if (error) {
+        console.error('DEBUG: Error en getById:', error);
+        throw error;
+      }
+      console.log('DEBUG: profilesService.getById terminado. Encontrado:', !!data);
+      return data || null
+    } catch (err) {
+      console.error('DEBUG: Excepción en getById:', err);
+      return null;
+    }
   },
 
   async getByEmail(email) {
@@ -50,8 +62,9 @@ export const profilesService = {
 
   // CREAR PERFIL
   async create(profile) {
+    console.log('DEBUG: profilesService.create empezando', profile);
     const newProfile = {
-      id: profile.id || crypto.randomUUID(),
+      id: profile.id || crypto.randomUUID(), // Generar UUID si no existe
       ...profile
     }
     const { data, error } = await supabase
@@ -59,7 +72,11 @@ export const profilesService = {
       .insert([newProfile])
       .select()
       .single()
-    if (error) throw error
+    if (error) {
+      console.error('DEBUG: Error en create:', error);
+      throw error
+    }
+    console.log('DEBUG: profilesService.create terminado');
     return data
   },
 
@@ -75,6 +92,42 @@ export const profilesService = {
     return data
   },
 
+  async ensureProfileForUser(authUser) {
+    if (!authUser) return null
+    console.log('DEBUG: ensureProfileForUser empezando para:', authUser.email);
+    try {
+      const existing = await this.getById(authUser.id)
+      if (existing) {
+        console.log('DEBUG: Perfil existente encontrado');
+        return existing
+      }
+
+      console.log('DEBUG: Perfil no encontrado, creando...');
+      // Si no existe, creamos el perfil inicial
+      return await this.create({
+        id: authUser.id,
+        email: authUser.email,
+        full_name: authUser.user_metadata?.full_name || authUser.email,
+        role: authUser.user_metadata?.role || 'client'
+      })
+    } catch (err) {
+      console.error('Error en ensureProfileForUser:', err)
+      return null
+    }
+  },
+
+
+  async upsertClient(clientData) {
+    // Buscar si ya existe un cliente con ese email
+    const existing = await this.getByEmail(clientData.email)
+
+    if (existing) {
+      return this.update(existing.id, { ...clientData, role: 'client' })
+    }
+
+    return this.create({ ...clientData, role: 'client' })
+  },
+
   async delete(id) {
     const { error, count } = await supabase
       .from('profiles')
@@ -85,3 +138,4 @@ export const profilesService = {
     return count
   }
 }
+

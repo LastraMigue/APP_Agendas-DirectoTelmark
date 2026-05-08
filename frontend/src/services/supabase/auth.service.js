@@ -23,102 +23,44 @@ export const authService = {
     return user
   },
 
-  async sendOTP(email, type) {
-    // Si es registro, verificamos que el cliente NO exista
-    if (type === 'registration') {
-      const { data: exists, error: rpcError } = await supabase
-        .rpc('check_client_email_exists', { search_email: email })
-      
-      if (rpcError) {
-        throw new Error('Error al verificar el correo. Intenta de nuevo.')
-      }
+  async sendOTP(email) {
+    // 1. Validar que el usuario existe y es CLIENTE antes de enviar nada
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('email', email.toLowerCase())
+      .maybeSingle()
 
-      if (exists) {
-        throw new Error('Ya tienes una cuenta con este correo. Por favor, inicia sesión.')
-      }
+    if (profileError) throw new Error('Error al verificar el perfil.')
+    
+    if (!profile) {
+      throw new Error('El correo no está registrado como cliente. Por favor, contacta con un agente.')
     }
 
-    // Si es login, verificamos primero que el cliente existe
-    if (type === 'login') {
-      const { data: exists, error: rpcError } = await supabase
-        .rpc('check_client_email_exists', { search_email: email })
-      
-      if (rpcError || !exists) {
-        throw new Error('El correo no está registrado como cliente.')
-      }
+    if (profile.role !== 'client') {
+      throw new Error('Este acceso es exclusivo para clientes.')
     }
 
-    const { data, error } = await supabase.auth.signInWithOtp({
+    // 2. Enviar OTP
+    const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        shouldCreateUser: type === 'registration', // Solo crea usuario en auth.users si es registro
-      }
+        shouldCreateUser: true,
+        emailRedirectTo: window.location.origin,
+      },
     })
+    
     if (error) throw error
-    return data
+    return true
   },
 
   async verifyOTP(email, token) {
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token,
-      type: 'email'
+      type: 'magiclink'
     })
     if (error) throw error
     return { success: true, data }
-  },
-
-  async createClient(clientData) {
-    const { data: { user } } = await supabase.auth.getUser()
-    const userId = user?.id
-
-    // Intentamos buscar si ya existe un cliente con ese email
-    const { data: existingClient } = await supabase
-      .from('clients')
-      .select('id')
-      .eq('email', clientData.email.toLowerCase())
-      .maybeSingle()
-
-    let result
-    if (existingClient) {
-      // Si existe, actualizamos su user_id y otros datos
-      const { data, error } = await supabase
-        .from('clients')
-        .update({
-          ...clientData,
-          user_id: userId,
-          email: clientData.email.toLowerCase() // Normalizamos a minúsculas
-        })
-        .eq('id', existingClient.id)
-        .select()
-      if (error) throw error
-      result = data
-    } else {
-      // Si no existe, lo creamos nuevo
-      const { data, error } = await supabase
-        .from('clients')
-        .insert([{
-          ...clientData,
-          user_id: userId,
-          email: clientData.email.toLowerCase() // Normalizamos a minúsculas
-        }])
-        .select()
-      if (error) throw error
-      result = data
-    }
-    
-    // Actualizamos el nombre en los metadatos de autenticación para que aparezca en el dashboard
-    try {
-      await supabase.auth.updateUser({
-        data: { 
-          full_name: clientData.full_name,
-          role: 'cliente'
-        }
-      })
-    } catch (updateError) {
-      console.warn('No se pudieron actualizar los metadatos del usuario:', updateError)
-    }
-
-    return result
   }
 }

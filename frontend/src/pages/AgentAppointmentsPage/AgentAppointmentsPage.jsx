@@ -19,34 +19,25 @@ const AgentAppointmentsPage = () => {
       setLoading(true)
       try {
         if (user) {
-          // Find agent id
-          const { data: agentData } = await supabase
-            .from('agents')
+          // Buscamos el perfil del agente en la tabla unificada
+          const { data: profileData } = await supabase
+            .from('profiles')
             .select('id')
-            .eq('email', user.email)
+            .eq('id', user.id)
+            .eq('role', 'agent')
             .maybeSingle()
           
-          let currentAgentId = agentData?.id
-
-          if (!currentAgentId) {
-            // Fallback: Check if agent.id matches user.id
-            const { data: agentById } = await supabase
-              .from('agents')
-              .select('id')
-              .eq('id', user.id)
-              .maybeSingle()
-            currentAgentId = agentById?.id
-          }
+          const currentAgentId = profileData?.id
 
           if (currentAgentId) {
             setAgentId(currentAgentId)
             const allAppointments = await appointmentsService.getAll()
             
-            // Filter appointments for this agent
+            // Filtramos las citas de este agente
             const agentAppointments = allAppointments.filter(app => app.agent_id === currentAgentId)
             setAppointments(agentAppointments)
           } else {
-            console.warn('No agent record found for this user.')
+            console.warn('No se encontró un perfil de agente para este usuario.')
           }
         }
       } catch (error) {

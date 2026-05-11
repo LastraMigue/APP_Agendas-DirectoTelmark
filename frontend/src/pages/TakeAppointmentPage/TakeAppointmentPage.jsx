@@ -74,7 +74,19 @@ const TakeAppointmentPage = () => {
         throw new Error('El cliente no está registrado. Por favor, regístralo primero en el apartado de Gestión de Clientes.');
       }
 
-      // 2. Crear Cita
+      // 2. Verificar si el cliente ya tiene una cita ese día
+      const existingApps = await appointmentsService.getAll();
+      const hasAppToday = existingApps.some(app => {
+        if (app.client_id !== clientProfile.id || app.status === 'cancelled') return false;
+        const appDate = new Date(app.start_time).toISOString().split('T')[0];
+        return appDate === formData.date;
+      });
+
+      if (hasAppToday) {
+        throw new Error('Este cliente ya tiene una cita programada para este día. Solo se permite una cita por día.');
+      }
+
+      // 3. Crear Cita
       const startTime = new Date(`${formData.date}T${formData.time}`);
       const endTime = new Date(startTime.getTime() + 30 * 60000);
 

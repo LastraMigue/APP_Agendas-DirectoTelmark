@@ -28,7 +28,8 @@ const CalendarPage = () => {
   const START_HOUR = 8
   const END_HOUR = 18
 
-  const isAdmin = user?.email === 'admin@test.com'
+  const isAdmin = user?.user_metadata?.role === 'admin' || user?.email === 'admin@test.com'
+  const userEmail = user?.email?.toLowerCase()
 
   const getOccupiedHoursForDate = (date, agentId) => {
     const dateStr = date.toISOString().split('T')[0]
@@ -219,8 +220,8 @@ const CalendarPage = () => {
     <MainLayout>
       <div className="agents-calendars-container">
         <header className="agents-calendars-header">
-          <h2>Agendas de Agentes</h2>
-          <p>Visualiza y gestiona las citas de todos los agentes del sistema.</p>
+          <h2>{isAdmin ? 'Agendas de Agentes' : 'Mi Calendario'}</h2>
+          <p>{isAdmin ? 'Visualiza y gestiona las citas de todos los agentes del sistema.' : 'Visualiza y gestiona tus citas programadas.'}</p>
         </header>
 
         {agents.length === 0 && !isAdmin ? (
@@ -230,36 +231,18 @@ const CalendarPage = () => {
           </div>
         ) : (
           <div className="calendars-grid">
-            {isAdmin && (
-              <div key="admin-calendar" className="agent-calendar-card">
-                <h3><Crown size={20} className="agent-icon" color="#F59E0B" /> Admin (Tú)</h3>
-                <FullCalendar
-                  plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                  initialView="dayGridMonth"
-                  headerToolbar={{
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                  }}
-                  buttonText={{
-                    today: 'Hoy',
-                    month: 'Mes',
-                    week: 'Semana',
-                    day: 'Día',
-                    list: 'Lista'
-                  }}
-                  events={getAdminEvents()}
-                  editable={true}
-                  droppable={true}
-                  selectable={true}
-                  select={handleDateSelect}
-                  eventDrop={handleEventDrop}
-                  eventResize={handleEventDrop}
-                  height="auto"
-                />
-              </div>
-            )}
-            {agents.map(agent => (
+
+            {agents
+              .filter(agent => {
+                // Admin ve todos los agentes; un agente solo se ve a sí mismo
+                if (isAdmin) return true
+                return (
+                  agent.id === user?.id ||
+                  agent.email?.toLowerCase() === userEmail ||
+                  agent.user_id === user?.id
+                )
+              })
+              .map(agent => (
               <div key={agent.id} className="agent-calendar-card">
                 <h3><User size={20} className="agent-icon" color="var(--primary)" /> {agent.name || agent.full_name || agent.email || 'Agente Desconocido'}</h3>
                 <FullCalendar
@@ -278,13 +261,10 @@ const CalendarPage = () => {
                     list: 'Lista'
                   }}
                   events={getAgentEvents(agent.id)}
-                  editable={true} // Permite mover las citas (drag & drop)
-                  droppable={true}
-                  selectable={true}
-                  select={handleDateSelect}
-                  eventDrop={handleEventDrop}
-                  eventResize={handleEventDrop} // Permite estirar para cambiar duración
-                  height="auto" // Ajusta la altura automáticamente
+                  editable={false}
+                  droppable={false}
+                  selectable={false}
+                  height="auto"
                 />
               </div>
             ))}
@@ -292,70 +272,7 @@ const CalendarPage = () => {
         )}
       </div>
 
-{isModalOpen && (
-        <div className="reservation-modal-overlay">
-          <div className="reservation-modal">
-            <h3>Reservar Cita</h3>
-            <div className="reservation-details">
-              <p><strong>Día seleccionado:</strong> {selectedDate?.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            </div>
-            
-            <div className="reservation-form">
-              <label>Agente:</label>
-              {availableAgents.length > 0 ? (
-                <select 
-                  value={selectedAgentId} 
-                  onChange={handleAgentChange}
-                  className="agent-select"
-                >
-                  {availableAgents.map(agent => (
-                    <option key={agent.id} value={agent.id}>
-                      {agent.name || agent.full_name || agent.email}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <p className="no-agents-error">No hay agentes disponibles.</p>
-              )}
 
-              <label>Hora Disponible:</label>
-              {availableHours.length > 0 ? (
-                <select 
-                  value={selectedHour} 
-                  onChange={(e) => setSelectedHour(e.target.value)}
-                  className="agent-select"
-                >
-                  <option value="">Selecciona una hora</option>
-                  {availableHours.map(hour => (
-                    <option key={hour.value} value={hour.value}>
-                      {hour.label}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <p className="no-agents-error">No hay horas disponibles para esta fecha.</p>
-              )}
-            </div>
-
-            <div className="reservation-actions">
-              <button 
-                className="btn-cancel" 
-                onClick={handleCloseModal}
-                disabled={isSubmitting}
-              >
-                Cancelar
-              </button>
-              <button 
-                className="btn-confirm" 
-                onClick={handleConfirmReservation}
-                disabled={!selectedHour || isSubmitting}
-              >
-                {isSubmitting ? 'Confirmando...' : 'Confirmar Reserva'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </MainLayout>
   )
 }

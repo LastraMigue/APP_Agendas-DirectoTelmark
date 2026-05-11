@@ -82,7 +82,7 @@ const ClientSummary = ({ user }) => {
     <div className="agent-summary-card">
       <div className="summary-header">
         <h3><Calendar size={20} /> Mis Próximas Citas</h3>
-        <button className="view-all-btn" onClick={() => navigate('/dashboard/appointments/my-appointments')}>
+        <button className="view-all-btn" onClick={() => navigate('/dashboard/my-appointments')}>
           Ver todas
         </button>
       </div>
@@ -90,7 +90,7 @@ const ClientSummary = ({ user }) => {
         {appointments.map(app => {
           const date = new Date(app.start_time);
           return (
-            <div key={app.id} className="summary-item" onClick={() => navigate('/dashboard/appointments/my-appointments')}>
+            <div key={app.id} className="summary-item" onClick={() => navigate('/dashboard/my-appointments')}>
               <div className="item-time-box client">
                 <span className="time-text">{date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
                 <Clock size={14} className="time-icon" />

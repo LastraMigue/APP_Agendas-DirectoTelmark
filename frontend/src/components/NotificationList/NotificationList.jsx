@@ -6,7 +6,7 @@ import { BellOff } from 'lucide-react'
 import './NotificationList.css'
 
 const NotificationList = () => {
-  const { notifications, markAsRead, deleteNotification, clearAll, loading } = useContext(NotificationContext)
+  const { notifications, deleteNotification, clearAll, loading } = useContext(NotificationContext)
   const navigate = useNavigate()
 
   if (loading) {
@@ -17,7 +17,11 @@ const NotificationList = () => {
     )
   }
 
-  if (notifications.length === 0) {
+  // Filter only non-dismissed notifications and limit to most recent 3
+  const activeNotifications = notifications.filter(n => !n.read)
+  const recentNotifications = activeNotifications.slice(0, 3)
+
+  if (activeNotifications.length === 0) {
     return (
       <div className="notification-list-container">
         <div className="notification-list-header">
@@ -34,21 +38,17 @@ const NotificationList = () => {
   return (
     <div className="notification-list-container">
       <div className="notification-list-header">
-        <span>Notificaciones</span>
+        <span>Notificaciones ({activeNotifications.length})</span>
         <button onClick={clearAll} className="clear-all-btn">Limpiar todo</button>
       </div>
       <div className="notification-items-wrapper">
-        {notifications.map((notification) => (
+        {recentNotifications.map((notification) => (
           <NotificationItem
             key={notification.id}
             notification={notification}
-            onMarkAsRead={markAsRead}
             onDelete={deleteNotification}
           />
         ))}
-      </div>
-      <div className="notification-list-footer">
-        <button onClick={() => navigate('/notifications')}>Ver todas las notificaciones</button>
       </div>
     </div>
   )

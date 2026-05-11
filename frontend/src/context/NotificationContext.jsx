@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext, useCallback } from 'react'
+import { createContext, useState, useEffect, useContext, useCallback, useRef } from 'react'
 import { AuthContext } from './AuthContext'
 import { notificationsService } from '../services/supabase/notifications.service'
 import { supabase } from '../services/supabase/client'
@@ -8,8 +8,14 @@ export const NotificationContext = createContext()
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([])
+  const notificationsRef = useRef([])
   const [loading, setLoading] = useState(false)
   const { user } = useContext(AuthContext)
+
+  // Mantener la referencia actualizada sin provocar re-renders en el bucle
+  useEffect(() => {
+    notificationsRef.current = notifications
+  }, [notifications])
 
   const fetchNotifications = useCallback(async () => {
     if (!user) return
@@ -104,57 +110,69 @@ export const NotificationProvider = ({ children }) => {
   useEffect(() => {
     if (!user) return
 
-    const checkUpcomingAppointments = async () => {
+    const checkAndCleanAppointments = async () => {
       try {
-        console.log('Checking for upcoming appointments...')
         const appointments = await appointmentsService.getAll()
         const now = new Date()
         const thirtyMinsFromNow = new Date(now.getTime() + 30 * 60000)
+        
+        const dismissedKey = `dismissed_reminders_${user.id}`
+        const dismissed = JSON.parse(localStorage.getItem(dismissedKey) || '[]')
 
         for (const app of appointments) {
           const appDate = new Date(app.start_time || app.date)
           
-          // Check if the appointment is in the window [now, now + 30min]
           if (appDate > now && appDate <= thirtyMinsFromNow) {
-            
-            // Should this user be notified?
-            // Notify if user is the agent, the client, or an admin
             const isAgent = app.agent_id === user.id
             const isClient = app.client_id === user.id
-            const isAdmin = user.role === 'admin'
-
-            if (isAgent || isClient || isAdmin) {
-              const alreadyNotified = notifications.some(
+            
+            if (isAgent || isClient) {
+              const alreadyNotified = notificationsRef.current.some(
                 n => n.type === 'appointment_reminder' && n.message.includes(app.id)
               )
 
-              if (!alreadyNotified) {
-                let rolePrefix = ''
-                if (isAgent) rolePrefix = '[Agente] '
-                if (isClient) rolePrefix = '[Cliente] '
-                if (isAdmin) rolePrefix = '[Admin] '
-
-                console.log(`Creating ${rolePrefix}reminder for appointment:`, app.id)
-                await notificationsService.create({
+              if (!alreadyNotified && !dismissed.includes(app.id)) {
+                const tempNotif = { type: 'appointment_reminder', message: `||| app_id:${app.id}` }
+                notificationsRef.current = [...notificationsRef.current, tempNotif]
+                
+                await addNotification({
                   user_id: user.id,
-                  title: 'Cita próxima',
-                  message: `${rolePrefix}Tienes una cita en menos de 30 minutos: ${app.title || 'Cita sin título'}. ID: ${app.id}`,
+                  title: 'Recordatorio de Cita',
+                  message: `Tienes una cita programada en menos de 30 minutos: ${app.title || 'Cita de servicio'}. ||| app_id:${app.id}`,
                   type: 'appointment_reminder'
                 })
               }
             }
           }
         }
+
+        const reminders = notificationsRef.current.filter(n => n.type === 'appointment_reminder')
+        for (const reminder of reminders) {
+          if (!reminder.id) continue
+          const match = reminder.message.match(/\|\|\| app_id:([a-f0-9-]+)/i)
+          if (match) {
+            const appId = match[1]
+            const app = appointments.find(a => a.id === appId)
+            if (app) {
+              const appEndDate = new Date(app.end_time || app.start_time || app.date)
+              if (appEndDate < now) {
+                await deleteNotification(reminder.id)
+              }
+            } else {
+              await deleteNotification(reminder.id)
+            }
+          }
+        }
       } catch (error) {
-        console.error('Error checking upcoming appointments:', error)
+        console.error('Error in background check:', error)
       }
     }
 
-    const interval = setInterval(checkUpcomingAppointments, 5 * 60000)
-    checkUpcomingAppointments()
+    const interval = setInterval(checkAndCleanAppointments, 5 * 60000)
+    checkAndCleanAppointments()
 
     return () => clearInterval(interval)
-  }, [user, notifications])
+  }, [user])
 
   const addNotification = async (notification) => {
     if (!user) return
@@ -178,18 +196,32 @@ export const NotificationProvider = ({ children }) => {
 
   const deleteNotification = async (id) => {
     try {
-      const { error } = await supabase.from('notifications').delete().eq('id', id)
-      if (error) throw error
-      // State will be updated by real-time listener or manually if needed
-      setNotifications(prev => prev.filter(n => n.id !== id))
+      // Si es un recordatorio, guardar en localStorage para que no vuelva a salir
+      const notifToDelete = notificationsRef.current.find(n => n.id === id)
+      if (notifToDelete && notifToDelete.type === 'appointment_reminder') {
+        const match = notifToDelete.message.match(/\|\|\| app_id:([a-f0-9-]+)/i)
+        if (match) {
+          const appId = match[1]
+          const dismissedKey = `dismissed_reminders_${user.id}`
+          const dismissed = JSON.parse(localStorage.getItem(dismissedKey) || '[]')
+          if (!dismissed.includes(appId)) {
+            dismissed.push(appId)
+            localStorage.setItem(dismissedKey, JSON.stringify(dismissed))
+          }
+        }
+      }
+
+      await notificationsService.markAsRead(id)
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
     } catch (error) {
-      console.error('Error deleting notification:', error)
+      console.error('Error dismissing notification:', error)
     }
   }
 
   const clearAll = async () => {
     if (!user) return
     try {
+      // For clear all, we do a real delete to keep DB clean
       const { error } = await supabase.from('notifications').delete().eq('user_id', user.id)
       if (error) throw error
       setNotifications([])
@@ -198,6 +230,7 @@ export const NotificationProvider = ({ children }) => {
     }
   }
 
+  // Only count truly unread (non-dismissed) notifications
   const unreadCount = notifications.filter(n => !n.read).length
 
   return (

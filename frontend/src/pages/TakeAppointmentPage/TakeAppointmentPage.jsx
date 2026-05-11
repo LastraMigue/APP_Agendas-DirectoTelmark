@@ -95,7 +95,7 @@ const TakeAppointmentPage = () => {
       await addNotification({
         user_id: formData.agentId,
         title: 'Nueva Cita Asignada',
-        message: `Se te ha asignado una cita con ${clientProfile.full_name} para el ${formData.date} a las ${formData.time}.`,
+        message: `Tienes una nueva cita con ${clientProfile.full_name} para el ${formData.date} a las ${formData.time}.`,
         type: 'appointment'
       });
 
@@ -107,16 +107,20 @@ const TakeAppointmentPage = () => {
         type: 'appointment'
       });
 
-      // Notify Admins
+      // Notify Admins (excluding the agent and client if they are admins)
       try {
         const admins = await profilesService.getAdmins();
+        const agentName = agents.find(a => a.id === formData.agentId)?.full_name || 'un agente';
+        
         for (const admin of admins) {
-          await addNotification({
-            user_id: admin.id,
-            title: 'Nueva Cita Registrada',
-            message: `El agente ${agents.find(a => a.id === formData.agentId)?.full_name} ha registrado una cita para ${clientProfile.full_name}.`,
-            type: 'appointment'
-          });
+          if (admin.id !== formData.agentId && admin.id !== clientProfile.id) {
+            await addNotification({
+              user_id: admin.id,
+              title: 'Nueva Cita Registrada',
+              message: `El agente ${agentName} ha registrado una cita para ${clientProfile.full_name} el ${formData.date}.`,
+              type: 'appointment'
+            });
+          }
         }
       } catch (adminErr) {
         console.error('Error notifying admins:', adminErr);

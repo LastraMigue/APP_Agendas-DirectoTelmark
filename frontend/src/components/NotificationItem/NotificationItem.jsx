@@ -1,7 +1,7 @@
 import { Trash2, Check, Calendar, UserPlus, UserMinus, AlertCircle } from 'lucide-react'
 import './NotificationItem.css'
 
-const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
+const NotificationItem = ({ notification, onDelete }) => {
   const getIcon = (type) => {
     switch (type) {
       case 'appointment':
@@ -28,26 +28,19 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
     })
   }
 
+  const displayMessage = notification.message.split('|||')[0].trim()
+
   return (
     <div className={`notification-item ${notification.read ? 'read' : 'unread'}`}>
       <div className="notification-content-wrapper">
         {getIcon(notification.type)}
         <div className="notification-text">
           <p className="notification-title">{notification.title}</p>
-          <p className="notification-message">{notification.message}</p>
+          <p className="notification-message">{displayMessage}</p>
           <span className="notification-time">{formatDate(notification.created_at)}</span>
         </div>
       </div>
       <div className="notification-actions">
-        {!notification.read && (
-          <button 
-            onClick={() => onMarkAsRead(notification.id)} 
-            className="action-btn mark-read"
-            title="Marcar como leída"
-          >
-            <Check size={14} />
-          </button>
-        )}
         <button 
           onClick={() => onDelete(notification.id)} 
           className="action-btn delete"

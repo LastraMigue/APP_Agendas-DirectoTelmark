@@ -1,13 +1,32 @@
-import { useContext, useState } from 'react'
+import { useContext, useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../context/AuthContext'
+import { NotificationContext } from '../../context/NotificationContext'
 import { User, LogOut, Settings, Bell, ChevronDown } from 'lucide-react'
+import NotificationList from '../NotificationList/NotificationList'
 import './Navbar.css'
 
 const Navbar = () => {
   const { user, signOut } = useContext(AuthContext)
+  const { unreadCount } = useContext(NotificationContext)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
   const navigate = useNavigate()
+  const notificationRef = useRef(null)
+  const userDropdownRef = useRef(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false)
+      }
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const handleSignOut = async () => {
     await signOut()
@@ -28,12 +47,23 @@ const Navbar = () => {
       </div>
 
       <div className="navbar-actions">
-        <button className="icon-button">
-          <Bell size={20} />
-          <span className="badge"></span>
-        </button>
+        <div className="notification-wrapper" ref={notificationRef}>
+          <button 
+            className={`icon-button ${showNotifications ? 'active' : ''}`}
+            onClick={() => setShowNotifications(!showNotifications)}
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
+          </button>
+          
+          {showNotifications && (
+            <div className="notifications-dropdown">
+              <NotificationList />
+            </div>
+          )}
+        </div>
 
-        <div className="user-profile">
+        <div className="user-profile" ref={userDropdownRef}>
           <div
             className="user-info"
             onClick={() => setShowDropdown(!showDropdown)}
@@ -50,10 +80,10 @@ const Navbar = () => {
                 <span>{user?.email}</span>
               </div>
               <div className="divider"></div>
-              <button onClick={() => navigate('/profile')}>
+              <button onClick={() => { navigate('/profile'); setShowDropdown(false); }}>
                 <User size={16} /> Mi Perfil
               </button>
-              <button onClick={() => navigate('/settings')}>
+              <button onClick={() => { navigate('/settings'); setShowDropdown(false); }}>
                 <Settings size={16} /> Configuración
               </button>
               <div className="divider"></div>

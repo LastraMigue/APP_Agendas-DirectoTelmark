@@ -1,11 +1,13 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useContext } from 'react'
 import { MainLayout } from '../../layouts/MainLayout'
 import { profilesService } from '../../services/supabase/profiles.service'
+import { NotificationContext } from '../../context/NotificationContext'
 import { Contact } from 'lucide-react'
 import Loader from '../../components/Loader/Loader'
 import './ManageClientsPage.css'
 
 const ManageClientsPage = () => {
+  const { addNotification } = useContext(NotificationContext)
   const [clients, setClients] = useState([])
   const [filteredClients, setFilteredClients] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -61,6 +63,28 @@ const ManageClientsPage = () => {
         setError('No se pudo eliminar el cliente. Es posible que no tengas permisos (RLS) o que el cliente ya no exista.')
       } else {
         setSuccess('Cliente eliminado correctamente')
+        
+        // Notify Admins
+        try {
+          const admins = await profilesService.getAdmins();
+          for (const admin of admins) {
+            await addNotification({
+              user_id: admin.id,
+              title: 'Cliente eliminado',
+              message: `Se ha eliminado al cliente: ${name}`,
+              type: 'client_deleted'
+            })
+          }
+        } catch (adminErr) {
+          console.error('Error notifying admins of deletion:', adminErr);
+          // Fallback to notify current user at least
+          addNotification({
+            title: 'Cliente eliminado',
+            message: `Se ha eliminado al cliente: ${name}`,
+            type: 'client_deleted'
+          })
+        }
+        
         fetchClients()
       }
     } catch (err) {
@@ -84,8 +108,30 @@ const ManageClientsPage = () => {
     }
 
     try {
-      await profilesService.create({ ...newClient, role: 'client' })
+      const createdClient = await profilesService.create({ ...newClient, role: 'client' })
       setSuccess('Cliente creado correctamente')
+      
+      // Notify Admins
+      try {
+        const admins = await profilesService.getAdmins();
+        for (const admin of admins) {
+          await addNotification({
+            user_id: admin.id,
+            title: 'Nuevo cliente',
+            message: `Se ha creado el cliente: ${newClient.full_name}`,
+            type: 'client_created'
+          })
+        }
+      } catch (adminErr) {
+        console.error('Error notifying admins of creation:', adminErr);
+        // Fallback to notify current user
+        addNotification({
+          title: 'Nuevo cliente',
+          message: `Se ha creado el cliente: ${newClient.full_name}`,
+          type: 'client_created'
+        })
+      }
+
       setNewClient({ full_name: '', email: '', phone: '' })
       setShowCreateModal(false)
       fetchClients()

@@ -8,7 +8,11 @@ export const notificationsService = {
   },
 
   async getByUserId(userId) {
-    const { data, error } = await supabase.from('notifications').select('*').eq('user_id', userId)
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
     if (error) throw error
     return data
   },

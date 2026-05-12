@@ -1,0 +1,117 @@
+
+.notification-list-container {
+  width: 360px;
+  max-height: 480px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e5e7eb;
+}
+
+.notification-list-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+}
+
+.notification-list-header span {
+  font-weight: 700;
+  color: #111827;
+  font-size: 1rem;
+  letter-spacing: -0.025em;
+}
+
+.clear-all-btn {
+  background: none;
+  border: none;
+  color: #6366f1;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.clear-all-btn:hover {
+  background-color: #eef2ff;
+  color: #4f46e5;
+}
+
+.notification-items-wrapper {
+  overflow-y: auto;
+  flex: 1;
+  background-color: #ffffff;
+}
+
+.notifications-empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: #9ca3af;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background-color: #ffffff;
+}
+
+.notifications-empty p {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.notifications-loading {
+  padding: 40px 20px;
+  text-align: center;
+  font-size: 0.9375rem;
+  color: #6b7280;
+  background-color: #ffffff;
+}
+
+.notification-list-footer {
+  padding: 12px;
+  text-align: center;
+  border-top: 1px solid #f3f4f6;
+  background-color: #f9fafb;
+}
+
+.notification-list-footer button {
+  background: none;
+  border: none;
+  color: #6366f1;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.notification-list-footer button:hover {
+  color: #4f46e5;
+  text-decoration: underline;
+}
+
+/* Scrollbar styling */
+.notification-items-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-items-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.notification-items-wrapper::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
+
+.notification-items-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}

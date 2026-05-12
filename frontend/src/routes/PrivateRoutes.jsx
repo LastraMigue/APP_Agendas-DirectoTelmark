@@ -12,6 +12,7 @@ import ClientAppointmentsPage from '../pages/ClientAppointmentsPage'
 import ManageClientsPage from '../pages/ManageClientsPage/ManageClientsPage'
 import AnalyticsPage from '../pages/AnalyticsPage/AnalyticsPage'
 import ManageAgentsPage from '../pages/ManageAgentsPage/ManageAgentsPage'
+import SettingsPage from '../pages/SettingsPage'
 
 const PrivateRoutes = () => {
   const { isAuthenticated, loading } = useAuth()
@@ -47,7 +48,7 @@ const PrivateRoutes = () => {
       <Route path="clients/new" element={<ManageClientsPage />} />
       <Route path="agents" element={<ManageAgentsPage />} />
       <Route path="reports" element={<AnalyticsPage />} />
-      <Route path="settings" element={<ManageClientsPage />} />
+      <Route path="settings" element={<SettingsPage />} />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

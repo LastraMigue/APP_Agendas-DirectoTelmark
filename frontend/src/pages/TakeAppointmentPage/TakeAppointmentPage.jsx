@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../services/supabase/client';
 import { appointmentsService } from '../../services/supabase/appointments.service';
 import { profilesService } from '../../services/supabase/profiles.service';
+import { NotificationContext } from '../../context/NotificationContext';
 import { MainLayout } from '../../layouts/MainLayout';
 import Loader from '../../components/Loader/Loader';
 import { Calendar, Clock, User, Phone, Mail, FileText, AlertCircle, CheckCircle2, Users, RefreshCw } from 'lucide-react';
@@ -10,6 +11,7 @@ import './TakeAppointmentPage.css';
 
 const TakeAppointmentPage = () => {
   const navigate = useNavigate();
+  const { addNotification } = useContext(NotificationContext);
   const [loading, setLoading] = useState(false);
   const [agents, setAgents] = useState([]);
   const [loadingAgents, setLoadingAgents] = useState(true);
@@ -88,6 +90,41 @@ const TakeAppointmentPage = () => {
         status: 'scheduled',
         priority: 'normal'
       });
+
+      // Notify Agent
+      await addNotification({
+        user_id: formData.agentId,
+        title: 'Nueva Cita Asignada',
+        message: `Tienes una nueva cita con ${clientProfile.full_name} para el ${formData.date} a las ${formData.time}.`,
+        type: 'appointment'
+      });
+
+      // Notify Client
+      await addNotification({
+        user_id: clientProfile.id,
+        title: 'Cita Confirmada',
+        message: `Tu cita ha sido programada para el ${formData.date} a las ${formData.time}.`,
+        type: 'appointment'
+      });
+
+      // Notify Admins (excluding the agent and client if they are admins)
+      try {
+        const admins = await profilesService.getAdmins();
+        const agentName = agents.find(a => a.id === formData.agentId)?.full_name || 'un agente';
+        
+        for (const admin of admins) {
+          if (admin.id !== formData.agentId && admin.id !== clientProfile.id) {
+            await addNotification({
+              user_id: admin.id,
+              title: 'Nueva Cita Registrada',
+              message: `El agente ${agentName} ha registrado una cita para ${clientProfile.full_name} el ${formData.date}.`,
+              type: 'appointment'
+            });
+          }
+        }
+      } catch (adminErr) {
+        console.error('Error notifying admins:', adminErr);
+      }
 
       setSuccess(true);
       // Redirigir al dashboard tras 2 segundos para que el agente vea el éxito

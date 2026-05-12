@@ -29,6 +29,19 @@ export const profilesService = {
     return data || []
   },
 
+  // OBTENER ADMINISTRADORES
+  async getAdmins() {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('role', 'admin')
+    if (error) {
+      console.error('Error al cargar administradores:', error.message)
+      return []
+    }
+    return data || []
+  },
+
   // BÚSQUEDAS POR ID / EMAIL
   async getById(id) {
     console.log('DEBUG: profilesService.getById empezando para ID:', id);

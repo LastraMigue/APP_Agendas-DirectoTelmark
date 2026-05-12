@@ -68,17 +68,20 @@ const ClientBookingPage = () => {
 
   const fetchData = async () => {
     try {
-      console.log('Cargando agentes y citas...');
-      const [fetchedAgents, fetchedAppointments] = await Promise.all([
+      console.log('Cargando personal (agentes y admins) y citas...');
+      const [fetchedAgents, fetchedAdmins, fetchedAppointments] = await Promise.all([
         profilesService.getAgents(),
+        profilesService.getAdmins(),
         appointmentsService.getAll()
       ])
       
+      const allStaff = [...(fetchedAgents || []), ...(fetchedAdmins || [])]
+      
       console.log('Datos cargados:', { 
-        agentes: fetchedAgents?.length, 
+        staff: allStaff.length, 
         citas: fetchedAppointments?.length 
       })
-      setAgents(fetchedAgents || [])
+      setAgents(allStaff)
       setAppointments(fetchedAppointments || [])
     } catch (error) {
       console.error('ERROR AL CARGAR DATOS (500?):', error)

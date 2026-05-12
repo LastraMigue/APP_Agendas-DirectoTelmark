@@ -13,6 +13,7 @@ import ManageClientsPage from '../pages/ManageClientsPage/ManageClientsPage'
 import AnalyticsPage from '../pages/AnalyticsPage/AnalyticsPage'
 import ManageAgentsPage from '../pages/ManageAgentsPage/ManageAgentsPage'
 import SettingsPage from '../pages/SettingsPage'
+import WhatsAppPage from '../pages/WhatsAppPage'
 
 const PrivateRoutes = () => {
   const { isAuthenticated, loading } = useAuth()
@@ -49,6 +50,7 @@ const PrivateRoutes = () => {
       <Route path="agents" element={<ManageAgentsPage />} />
       <Route path="reports" element={<AnalyticsPage />} />
       <Route path="settings" element={<SettingsPage />} />
+      <Route path="whatsapp" element={<WhatsAppPage />} />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

@@ -3,18 +3,26 @@ import express from 'express';
 import qrcodeTerminal from 'qrcode-terminal';
 import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
+import cors from 'cors'; 
+import fs from 'fs';
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
+// VARIABLES GLOBALES DE ESTADO
 let sock;
+let latestQR = null;
+let isConnected = false;
 
 async function connectToWhatsApp() {
+    console.log('🔄 Iniciando conexión a WhatsApp...');
     const { state, saveCreds } = await useMultiFileAuthState('auth_info');
+
     sock = makeWASocket({
         auth: state,
         printQRInTerminal: false,
@@ -22,24 +30,78 @@ async function connectToWhatsApp() {
     });
 
     sock.ev.on('creds.update', saveCreds);
+
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
+
         if (qr) {
-            console.log('--- ESCANEA EL QR ---');
+            console.log('🆕 Nuevo código QR generado');
+            latestQR = qr; 
+            isConnected = false;
             qrcodeTerminal.generate(qr, { small: true });
         }
-        if (connection === 'open') console.log('✅ WhatsApp conectado');
+
+        if (connection === 'open') {
+            console.log('✅ WhatsApp conectado');
+            isConnected = true;
+            latestQR = null;
+        }
+
         if (connection === 'close') {
+            isConnected = false;
             const shouldReconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut;
+            console.log('❌ Conexión cerrada. ¿Reconectar?:', shouldReconnect);
             if (shouldReconnect) connectToWhatsApp();
         }
     });
 }
 
+// --- ENDPOINT PARA EL FRONTEND DE ADMINISTRADOR ---
+app.get('/whatsapp-status', (req, res) => {
+    console.log(`🔍 Consulta de estado: ${isConnected ? 'Conectado' : 'Desconectado'} | QR: ${latestQR ? 'Disponible' : 'No disponible'}`);
+    res.json({
+        connected: isConnected,
+        qr: latestQR
+    });
+});
+
+app.post('/whatsapp-logout', async (req, res) => {
+    console.log('🗑️ Solicitud de cierre de sesión recibida');
+    try {
+        if (sock) {
+            await sock.logout();
+        }
+        
+        // Borrar carpeta de sesión para forzar nuevo QR
+        if (fs.existsSync('auth_info')) {
+            fs.rmSync('auth_info', { recursive: true, force: true });
+        }
+        
+        isConnected = false;
+        latestQR = null;
+        
+        // Reiniciar conexión para generar nuevo QR
+        setTimeout(() => {
+            connectToWhatsApp();
+        }, 2000);
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error en logout:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- WEBHOOK DE CITAS ---
 app.post('/webhook-cita', async (req, res) => {
     try {
         const { record } = req.body;
         if (!record || !record.client_id) return res.status(400).send('Faltan datos');
+
+        if (!isConnected) {
+            console.error('❌ Intento de envío sin WhatsApp conectado');
+            return res.status(503).send('WhatsApp no conectado');
+        }
 
         // 1. OBTENER DATOS DEL CLIENTE
         const { data: clientProfile } = await supabase
@@ -65,17 +127,13 @@ app.post('/webhook-cita', async (req, res) => {
         let cleanNumber = clientProfile.phone.toString().replace(/\D/g, '');
         if (cleanNumber.length === 9 && !cleanNumber.startsWith('34')) cleanNumber = '34' + cleanNumber;
 
-        // 4. TRATAMIENTO DE FECHA (Ajuste automático a España)
+        // 4. TRATAMIENTO DE FECHA
         let fechaTexto = "A confirmar";
         let horaTexto = "A confirmar";
 
         if (record.start_time) {
-            // Creamos el objeto fecha. JavaScript detectará que es UTC y lo pasará a tu hora local (España)
             const fechaObj = new Date(record.start_time);
-
             if (!isNaN(fechaObj.getTime())) {
-                // Eliminamos la línea de setHours(+2) para evitar el error de doble suma
-
                 fechaTexto = fechaObj.toLocaleDateString('es-ES', {
                     weekday: 'long', day: 'numeric', month: 'long'
                 });
@@ -84,14 +142,12 @@ app.post('/webhook-cita', async (req, res) => {
                 horaTexto = fechaObj.toLocaleTimeString('es-ES', {
                     hour: '2-digit',
                     minute: '2-digit',
-                    timeZone: 'Europe/Madrid' // Forzamos explícitamente la hora de Madrid
+                    timeZone: 'Europe/Madrid'
                 });
             }
         }
 
-        // 5. MENSAJE FINAL
-        const mensaje =
-            `Estimado/a *${clientProfile.full_name}*,
+        const mensaje = `Estimado/a *${clientProfile.full_name}*,
 
 Confirmamos que su cita ha sido programada con éxito en *DirectoTelmark*.
 
@@ -105,7 +161,7 @@ Si necesita realizar cualquier cambio o cancelación, por favor contáctenos con
 ¡Gracias por confiar en nosotros!`;
 
         await sock.sendMessage(`${cleanNumber}@s.whatsapp.net`, { text: mensaje });
-        console.log(`🚀 ¡WhatsApp enviado! Cliente: ${clientProfile.full_name} | Hora: ${horaTexto}`);
+        console.log(`🚀 Mensaje enviado a ${clientProfile.full_name}`);
 
         res.status(200).json({ success: true });
 

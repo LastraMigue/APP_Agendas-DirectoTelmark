@@ -48,14 +48,14 @@ const Navbar = () => {
 
       <div className="navbar-actions">
         <div className="notification-wrapper" ref={notificationRef}>
-          <button 
+          <button
             className={`icon-button ${showNotifications ? 'active' : ''}`}
             onClick={() => setShowNotifications(!showNotifications)}
           >
             <Bell size={20} />
             {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
           </button>
-          
+
           {showNotifications && (
             <div className="notifications-dropdown">
               <NotificationList />
@@ -80,10 +80,10 @@ const Navbar = () => {
                 <span>{user?.email}</span>
               </div>
               <div className="divider"></div>
-              <button onClick={() => { navigate('/profile'); setShowDropdown(false); }}>
+              <button onClick={() => { navigate('/profile'); setShowDropdown(false) }}>
                 <User size={16} /> Mi Perfil
               </button>
-              <button onClick={() => { navigate('/settings'); setShowDropdown(false); }}>
+              <button onClick={() => { navigate('/dashboard/settings'); setShowDropdown(false) }}>
                 <Settings size={16} /> Configuración
               </button>
               <div className="divider"></div>

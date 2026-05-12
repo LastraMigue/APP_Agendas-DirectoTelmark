@@ -64,7 +64,7 @@ export const NotificationProvider = ({ children }) => {
             } else if (payload.eventType === 'UPDATE') {
               setNotifications(prev => prev.map(n => n.id === payload.new.id ? payload.new : n))
             } else if (payload.eventType === 'DELETE') {
-              setNotifications(prev => prev.filter(n => n.id === payload.old.id))
+              setNotifications(prev => prev.filter(n => n.id !== payload.old.id))
             }
           }
         )
@@ -196,8 +196,8 @@ export const NotificationProvider = ({ children }) => {
 
   const deleteNotification = async (id) => {
     try {
-      // Si es un recordatorio, guardar en localStorage para que no vuelva a salir
-      const notifToDelete = notificationsRef.current.find(n => n.id === id)
+      // Si es un recordatorio, guardar en localStorage para que no vuelva a salir nunca
+      const notifToDelete = notifications.find(n => n.id === id)
       if (notifToDelete && notifToDelete.type === 'appointment_reminder') {
         const match = notifToDelete.message.match(/\|\|\| app_id:([a-f0-9-]+)/i)
         if (match) {
@@ -211,10 +211,10 @@ export const NotificationProvider = ({ children }) => {
         }
       }
 
-      await notificationsService.markAsRead(id)
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
+      await notificationsService.delete(id)
+      setNotifications(prev => prev.filter(n => n.id !== id))
     } catch (error) {
-      console.error('Error dismissing notification:', error)
+      console.error('Error deleting notification:', error)
     }
   }
 

@@ -26,6 +26,7 @@ const ClientBookingPage = () => {
   const [availableSlots, setAvailableSlots] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState(null)
 
   const START_HOUR = 8
   const END_HOUR = 18
@@ -67,17 +68,20 @@ const ClientBookingPage = () => {
 
   const fetchData = async () => {
     try {
-      console.log('Cargando agentes y citas...');
-      const [fetchedAgents, fetchedAppointments] = await Promise.all([
+      console.log('Cargando personal (agentes y admins) y citas...');
+      const [fetchedAgents, fetchedAdmins, fetchedAppointments] = await Promise.all([
         profilesService.getAgents(),
+        profilesService.getAdmins(),
         appointmentsService.getAll()
       ])
       
+      const allStaff = [...(fetchedAgents || []), ...(fetchedAdmins || [])]
+      
       console.log('Datos cargados:', { 
-        agentes: fetchedAgents?.length, 
+        staff: allStaff.length, 
         citas: fetchedAppointments?.length 
       })
-      setAgents(fetchedAgents || [])
+      setAgents(allStaff)
       setAppointments(fetchedAppointments || [])
     } catch (error) {
       console.error('ERROR AL CARGAR DATOS (500?):', error)
@@ -159,6 +163,7 @@ const ClientBookingPage = () => {
     setAvailableSlots([])
     setIsModalOpen(true)
     setSuccess(false)
+    setError(null)
   }
 
   const handleAgentChange = (e) => {
@@ -174,9 +179,16 @@ const ClientBookingPage = () => {
   const handleConfirmBooking = async () => {
     if (!selectedAgentId || !selectedDate || !selectedSlot) return
 
-    // Restricciones eliminadas por petición del usuario: 
-    // - Ya se puede reservar más de una vez al día.
-    // - Ya se pueden tener varias citas en el mismo día de calendario.
+    // Validación: Solo una cita por día
+    const dateStr = getLocalDateString(selectedDate)
+    const hasAppToday = myAppointments.some(app => getLocalDateString(new Date(app.start_time)) === dateStr)
+    
+    if (hasAppToday) {
+      setError('Ya tienes una cita programada para este día. Solo se permite una cita por día.')
+      return
+    }
+
+    setError(null)
 
     try {
       setIsSubmitting(true)
@@ -229,6 +241,7 @@ const ClientBookingPage = () => {
     setSelectedAgentId('')
     setSelectedSlot('')
     setAvailableSlots([])
+    setError(null)
   }
 
   const selectedDayAppointments = useMemo(() => {
@@ -291,6 +304,24 @@ const ClientBookingPage = () => {
                 <div className="reservation-details">
                   <p><strong>Fecha:</strong> {selectedDate?.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
                 </div>
+
+                {error && (
+                  <div className="error-message" style={{ 
+                    margin: '1rem 0', 
+                    padding: '0.75rem', 
+                    backgroundColor: '#fee2e2', 
+                    color: '#dc2626', 
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.9rem',
+                    border: '1px solid #fecaca'
+                  }}>
+                    <AlertCircle size={18} />
+                    <span>{error}</span>
+                  </div>
+                )}
                 
                 <div className="reservation-form">
                     <label>Selecciona un Agente:</label>

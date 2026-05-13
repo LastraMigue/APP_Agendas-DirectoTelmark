@@ -8,12 +8,9 @@ whatsapp-service/npm-debug.log*
 # --- Frontend ---
 frontend/node_modules/
 frontend/dist/
-frontend/.vite/
-frontend/.env
-frontend/.env.local
-frontend/.env.development.local
-frontend/.env.test.local
-frontend/.env.production.local
+**/.vite/
+frontend/.env*
+!frontend/.env.example
 
 # --- Logs & Debug ---
 logs

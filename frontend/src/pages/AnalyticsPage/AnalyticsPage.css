@@ -1,0 +1,71 @@
+.analytics-page-container {
+  padding: 2rem;
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+.analytics-header {
+  margin-bottom: 2rem;
+}
+
+.analytics-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.025em;
+}
+
+.header-icon {
+  color: #3b82f6;
+}
+
+.analytics-subtitle {
+  color: #64748b;
+  font-size: 1.1rem;
+}
+
+/* La tarjeta contenedora que unifica el estilo con el resto de las páginas */
+.analytics-card {
+  background: white;
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  overflow: hidden;
+  animation: slideUp 0.6s ease-out;
+}
+
+.card-header-inner {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #f1f5f9;
+  background-color: #ffffff;
+}
+
+.card-header-inner h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #334155;
+  margin: 0;
+}
+
+.analytics-body {
+  padding: 2rem;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .analytics-page-container {
+    padding: 1rem;
+  }
+  
+  .analytics-title {
+    font-size: 1.5rem;
+  }
+}

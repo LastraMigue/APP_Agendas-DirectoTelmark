@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
-import ProtectedRoute from '../components/auth/ProtectedRoute'
+import ProtectedRoute from '../components/ProtectedRoute'
 
 const RoleRoutes = ({ allowedRoles, children }) => {
   return (

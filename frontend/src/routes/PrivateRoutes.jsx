@@ -1,14 +1,19 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import useAuth from '../hooks/useAuth'
-import LoginPage from '../pages/auth/LoginPage'
+import LoginPage from '../pages/LoginPage'
 import Dashboard from '../pages/Dashboard'
 import NotFoundPage from '../pages/NotFoundPage'
-import Loader from '../components/common/Loader/Loader'
-import TakeAppointmentPage from '../pages/appointments/TakeAppointmentPage'
-import CalendarPage from '../pages/calendar/CalendarPage'
-import ClientBookingPage from '../pages/calendar/ClientBookingPage'
-import AgentAppointmentsPage from '../pages/appointments/AgentAppointmentsPage'
-import ClientAppointmentsPage from '../pages/appointments/ClientAppointmentsPage'
+import Loader from '../components/Loader/Loader'
+import TakeAppointmentPage from '../pages/TakeAppointmentPage'
+import CalendarPage from '../pages/CalendarPage'
+import ClientBookingPage from '../pages/ClientBookingPage'
+import AgentAppointmentsPage from '../pages/AgentAppointmentsPage'
+import ClientAppointmentsPage from '../pages/ClientAppointmentsPage'
+import ManageClientsPage from '../pages/ManageClientsPage/ManageClientsPage'
+import AnalyticsPage from '../pages/AnalyticsPage/AnalyticsPage'
+import ManageAgentsPage from '../pages/ManageAgentsPage/ManageAgentsPage'
+import SettingsPage from '../pages/SettingsPage'
+import WhatsAppPage from '../pages/WhatsAppPage'
 
 const PrivateRoutes = () => {
   const { isAuthenticated, loading } = useAuth()
@@ -34,11 +39,19 @@ const PrivateRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Dashboard />} />
-      <Route path="/book" element={<ClientBookingPage />} />
-      <Route path="/appointments/take" element={<TakeAppointmentPage />} />
-      <Route path="/appointments/history" element={<AgentAppointmentsPage />} />
-      <Route path="/my-appointments" element={<ClientAppointmentsPage />} />
-      <Route path="/calendar" element={<CalendarPage />} />
+      <Route path="book" element={<ClientBookingPage />} />
+      <Route path="appointments/take" element={<TakeAppointmentPage />} />
+      <Route path="appointments/history" element={<AgentAppointmentsPage />} />
+      <Route path="my-appointments" element={<ClientAppointmentsPage />} />
+      <Route path="calendar" element={<CalendarPage />} />
+      <Route path="analytics" element={<AnalyticsPage />} />
+      <Route path="clients" element={<ManageClientsPage />} />
+      <Route path="clients/new" element={<ManageClientsPage />} />
+      <Route path="agents" element={<ManageAgentsPage />} />
+      <Route path="reports" element={<AnalyticsPage />} />
+      <Route path="settings" element={<SettingsPage />} />
+      <Route path="whatsapp" element={<WhatsAppPage />} />
+
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )

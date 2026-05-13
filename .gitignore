@@ -1,4 +1,21 @@
-# Logs
+# --- WhatsApp Microservice ---
+whatsapp-service/node_modules/
+whatsapp-service/.env
+# CRÍTICO: No subir la sesión de WhatsApp (evita que otros usen tu cuenta)
+whatsapp-service/auth_info/
+whatsapp-service/npm-debug.log*
+
+# --- Frontend ---
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# --- Logs & Debug ---
 logs
 *.log
 npm-debug.log*
@@ -7,29 +24,18 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# --- System & Editor Files ---
+.DS_Store
+Thumbs.db
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-# Supabase
+# --- Supabase ---
 supabase/.temp/
-
-# Dependencies
-frontend/node_modules/
-frontend/dist/
-frontend/.vite/
-frontend/.env
-# Environment files
-# frontend/.env  # Comenta esto si quieres usar variables de entorno
+.env

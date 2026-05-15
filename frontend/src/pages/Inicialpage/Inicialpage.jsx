@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import logo from '../../assets/logo.jpg'
 import Inicialpageform from '../../components/Inicialpage'
 import useAuth from '../../hooks/useAuth'
 
@@ -19,7 +20,7 @@ const Inicialpage = () => {
       <div className="inicial-container">
         <div className="inicial-header">
           <img
-            src="https://directotelmark.es/wp-content/uploads/2025/02/directotelmarksinfondo.png"
+            src={logo}
             alt="Directo Telmark"
             className="inicial-logo"
           />

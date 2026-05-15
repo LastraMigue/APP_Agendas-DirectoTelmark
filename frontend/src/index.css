@@ -5,7 +5,7 @@
   /* Amarillo corporativo */
   --secondary: #1a202c;
   /* Negro corporativo */
-  --bg-main: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+  --bg-main: linear-gradient(135deg, #cbd5e0 0%, #e9e2aa 100%);
   --card-bg: #ffffff;
   --text-main: #1a202c;
   --text-muted: #4a5568;
@@ -85,4 +85,14 @@ button {
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
+}
+
+/* Global Logo Size for Auth Pages */
+.login-logo,
+.signin-logo,
+.selection-logo,
+.inicial-logo {
+  max-width: 240px !important;
+  height: auto;
+  margin-bottom: 24px;
 }

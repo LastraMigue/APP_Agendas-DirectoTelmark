@@ -56,7 +56,7 @@ const LoginForm = () => {
       )}
 
       <Input
-        label="Email"
+        label="Correo"
         type="email"
         placeholder="tu@email.com"
         icon={Mail}

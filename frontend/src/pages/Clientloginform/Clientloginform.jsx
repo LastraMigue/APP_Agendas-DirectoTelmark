@@ -4,9 +4,12 @@ import { ArrowLeft } from 'lucide-react'
 import ClientLoginForm from '../../components/Clientloginform'
 import useAuth from '../../hooks/useAuth'
 
+import logo from '../../assets/logo.jpg'
+
 const ClientLoginPage = () => {
   const { isAuthenticated, signOut, loading } = useAuth()
   const [isFirstCheck, setIsFirstCheck] = useState(true)
+  const [step, setStep] = useState(1)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -26,20 +29,23 @@ const ClientLoginPage = () => {
         </button>
         <div className="login-header">
           <img 
-            src="https://directotelmark.es/wp-content/uploads/2025/02/directotelmarksinfondo.png" 
+            src={logo} 
             alt="Directo Telmark" 
             className="login-logo"
           />
-          <h1 className="login-title">Acceso Clientes</h1>
-          <p className="login-subtitle">Inicia sesión para gestionar tus citas corporativas</p>
+          <h1 className="login-title">Registro de Clientes</h1>
+          <p className="login-subtitle">Regístrate para gestionar tus citas corporativas</p>
         </div>
 
-        <ClientLoginForm />
+        <ClientLoginForm onStepChange={setStep} />
         
         <div className="login-footer">
-          <p className="test-credentials">
-            ¿Ya tienes cuenta? <Link to="/iniciar-sesion" className="login-link">Inicia sesión aquí</Link>
-          </p>
+          {step === 1 && (
+            <p className="test-credentials">
+              ¿Ya tienes cuenta? <Link to="/iniciar-sesion" className="login-link">Inicia sesión aquí</Link>
+            </p>
+          )}
+          <p className="copyright">© 2026 Directo Telmark. Todos los derechos reservados.</p>
         </div>
       </div>
     </div>

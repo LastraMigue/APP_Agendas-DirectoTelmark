@@ -1,14 +1,16 @@
 import { useState, useEffect, useContext } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { AuthContext } from '../../context/AuthContext'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Mail, User, ArrowLeft } from 'lucide-react'
 import Button from '../../components/Button'
 import Input from '../../components/Input'
+import OTPInput from '../../components/OTPInput'
 import { authService } from '../../services/supabase/auth.service'
 import useAuth from '../../hooks/useAuth'
+import logo from '../../assets/logo.jpg'
 import './ClientSignInPage.css'
 
 const clientSignInSchema = z.object({
@@ -26,6 +28,7 @@ const ClientSignInPage = () => {
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(1) // 1: Email, 2: OTP
   const [email, setEmail] = useState('')
+  const [countdown, setCountdown] = useState(0)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -37,10 +40,22 @@ const ClientSignInPage = () => {
     }
   }, [authLoading, isAuthenticated, isFirstCheck, signOut])
 
+  useEffect(() => {
+    let timer
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1)
+      }, 1000)
+    }
+    return () => clearInterval(timer)
+  }, [countdown])
+
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    control,
+    formState: { errors },
+    getValues
   } = useForm({
     resolver: zodResolver(clientSignInSchema),
     defaultValues: {
@@ -56,6 +71,21 @@ const ClientSignInPage = () => {
       await authService.sendOTP(data.email, 'login')
       setEmail(data.email)
       setStep(2)
+      setCountdown(60) // 60 seconds countdown
+    } catch (error) {
+      setAuthError(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const onResendOTP = async () => {
+    if (countdown > 0) return
+    setAuthError(null)
+    setLoading(true)
+    try {
+      await authService.sendOTP(email, 'login')
+      setCountdown(60)
     } catch (error) {
       setAuthError(error.message)
     } finally {
@@ -86,7 +116,7 @@ const ClientSignInPage = () => {
         </button>
         <div className="signin-header">
           <img
-            src="https://directotelmark.es/wp-content/uploads/2025/02/directotelmarksinfondo.png"
+            src={logo}
             alt="Directo Telmark"
             className="signin-logo"
           />
@@ -107,7 +137,7 @@ const ClientSignInPage = () => {
 
           {step === 1 ? (
             <Input
-              label="Email del Cliente"
+              label="Correo"
               type="email"
               placeholder="tu@email.com"
               icon={Mail}
@@ -115,15 +145,21 @@ const ClientSignInPage = () => {
               {...register('email')}
             />
           ) : (
-            <Input
-              label="Código de Verificación"
-              type="text"
-              placeholder="00000000"
-              maxLength={8}
-              icon={User}
-              error={errors.otp?.message}
-              {...register('otp')}
-            />
+            <div className="otp-section" style={{ marginBottom: '20px' }}>
+              <p className="input-label" style={{ marginBottom: '12px', textAlign: 'center' }}>Código de Verificación</p>
+              <Controller
+                name="otp"
+                control={control}
+                render={({ field }) => (
+                  <OTPInput
+                    length={8}
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={errors.otp?.message}
+                  />
+                )}
+              />
+            </div>
           )}
 
           <Button
@@ -137,21 +173,26 @@ const ClientSignInPage = () => {
           </Button>
 
           {step === 2 && (
-            <button
-              type="button"
-              className="resend-button"
-              onClick={() => setStep(1)}
-              style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', marginTop: '10px', fontSize: '14px' }}
-            >
-              Cambiar email o volver a intentar
-            </button>
+            <div className="resend-container">
+              <button
+                type="button"
+                className="resend-button"
+                disabled={countdown > 0}
+                onClick={onResendOTP}
+              >
+                {countdown > 0 ? `Reenviar código en ${countdown}s` : 'Reenviar código'}
+              </button>
+            </div>
           )}
         </form>
 
         <div className="signin-footer">
-          <p className="signin-footer-text">
-            ¿No tienes cuenta? <Link to="/registrarse" className="signin-link">Regístrate aquí</Link>
-          </p>
+          {step === 1 && (
+            <p className="signin-footer-text">
+              ¿No tienes cuenta? <Link to="/registrarse" className="signin-link">Regístrate aquí</Link>
+            </p>
+          )}
+          <p className="copyright">© 2026 Directo Telmark. Todos los derechos reservados.</p>
         </div>
       </div>
     </div>

@@ -175,9 +175,12 @@ app.post('/whatsapp-logout', async (req, res) => {
 app.post('/webhook-cita', async (req, res) => {
     // Supabase puede enviar el tipo en 'type', 'event_type' o 'action'
     const body = req.body || {};
-    const operationType = (body.type || body.event_type || body.action || 'MANUAL').toUpperCase();
+    const operationType = (body.type || body.event_type || body.action || body.event || 'MANUAL').toUpperCase();
     const record = body.record;
-    const isUpdate = operationType === 'UPDATE';
+    const oldRecord = body.old_record;
+    
+    // Es una actualización si el tipo es UPDATE o si existe un registro previo (old_record)
+    const isUpdate = operationType === 'UPDATE' || (!!oldRecord && Object.keys(oldRecord).length > 0);
     
     console.log(`📩 Webhook recibido [${operationType}] para cita:`, record?.id);
     console.log('DEBUG: Campos recibidos en el body:', Object.keys(body).join(', '));

@@ -5,9 +5,16 @@ export const hasRole = (userRole, allowedRoles) => {
 }
 
 export const canManageAgents = (role) => {
-  return [ROLES.ADMIN, ROLES.SUPERVISOR].includes(role)
+  const normalizedRole = role?.toLowerCase()
+  return [ROLES.ADMIN, ROLES.SUPERVISOR].includes(normalizedRole)
 }
 
 export const canManageAppointments = (role) => {
-  return [ROLES.ADMIN, ROLES.SUPERVISOR, ROLES.AGENT].includes(role)
+  const normalizedRole = role?.toLowerCase()
+  return [
+    ROLES.ADMIN, 
+    ROLES.SUPERVISOR, 
+    ROLES.AGENT,
+    'agente' // Spanish synonym used in some parts of the code
+  ].includes(normalizedRole)
 }

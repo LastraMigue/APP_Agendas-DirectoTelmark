@@ -76,7 +76,13 @@ const TakeAppointmentPage = () => {
         throw new Error('El cliente no está registrado. Por favor, regístralo primero en el apartado de Gestión de Clientes.');
       }
 
-      // 2. Verificar si el cliente ya tiene una cita ese día
+      // 2. Verificar que la fecha no sea pasada
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (formData.date < todayStr) {
+        throw new Error('No se pueden programar citas en fechas pasadas.');
+      }
+
+      // 3. Verificar si el cliente ya tiene una cita ese día
       const existingApps = await appointmentsService.getAll();
       const hasAppToday = existingApps.some(app => {
         if (app.client_id !== clientProfile.id || app.status === 'cancelled') return false;
@@ -86,6 +92,24 @@ const TakeAppointmentPage = () => {
 
       if (hasAppToday) {
         throw new Error('Este cliente ya tiene una cita programada para este día. Solo se permite una cita por día.');
+      }
+
+      // 3. Verificar si YA HAY una cita a esa hora (Restricción Global)
+      const isHourOccupied = existingApps.some(app => {
+        if (app.status === 'cancelled') return false;
+        
+        const appDate = new Date(app.start_time);
+        const appDateStr = appDate.toISOString().split('T')[0];
+        const appHour = appDate.getHours();
+        
+        // Obtenemos la hora seleccionada (ej: "10:00" -> 10)
+        const selectedHour = parseInt(formData.time.split(':')[0]);
+        
+        return appDateStr === formData.date && appHour === selectedHour;
+      });
+
+      if (isHourOccupied) {
+        throw new Error('Ya existe una cita programada para esa hora en el sistema. Por favor, elige otro horario.');
       }
 
       // 3. Crear Cita
@@ -280,6 +304,7 @@ const TakeAppointmentPage = () => {
                       value={formData.date}
                       onChange={handleChange}
                       required
+                      min={new Date().toISOString().split('T')[0]}
                     />
                   </div>
                 </div>

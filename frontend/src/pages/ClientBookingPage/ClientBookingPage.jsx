@@ -110,7 +110,6 @@ const ClientBookingPage = () => {
     
     return appointments
       .filter(app => {
-        if (app.agent_id !== agentId) return false
         if (app.status === 'cancelled') return false
         const appDateStr = getLocalDateString(new Date(app.start_time))
         return appDateStr === dateStr
@@ -121,10 +120,10 @@ const ClientBookingPage = () => {
       })
   }
 
-  const getAvailableSlots = (date, agentId) => {
-    if (!date || !agentId) return []
+  const getAvailableSlots = (date) => {
+    if (!date) return []
     
-    const occupiedSlots = getOccupiedSlotsForDate(date, agentId)
+    const occupiedSlots = getOccupiedSlotsForDate(date)
     const slots = []
     const now = new Date()
     const isToday = getLocalDateString(date) === getLocalDateString(now)
@@ -170,8 +169,8 @@ const ClientBookingPage = () => {
     const agentId = e.target.value
     setSelectedAgentId(agentId)
     setSelectedSlot('')
-    if (selectedDate && agentId) {
-      const slots = getAvailableSlots(selectedDate, agentId)
+    if (selectedDate) {
+      const slots = getAvailableSlots(selectedDate)
       setAvailableSlots(slots)
     }
   }
@@ -332,7 +331,7 @@ const ClientBookingPage = () => {
                     >
                       <option value="">Selecciona un agente...</option>
                       {agents.map(agent => {
-                        const freeSlots = getAvailableSlots(selectedDate, agent.id).length
+                        const freeSlots = getAvailableSlots(selectedDate).length
                         return (
                           <option key={agent.id} value={agent.id} disabled={freeSlots === 0}>
                             {agent.full_name} {freeSlots === 0 ? '(Lleno)' : `(${freeSlots} huecos)`}

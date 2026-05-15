@@ -173,8 +173,17 @@ app.post('/whatsapp-logout', async (req, res) => {
 });
 
 app.post('/webhook-cita', async (req, res) => {
-    const { record } = req.body;
-    console.log('📩 Webhook recibido para cita:', record?.id);
+    // Supabase puede enviar el tipo en 'type', 'event_type' o 'action'
+    const body = req.body || {};
+    const operationType = (body.type || body.event_type || body.action || body.event || 'MANUAL').toUpperCase();
+    const record = body.record;
+    const oldRecord = body.old_record;
+    
+    // Es una actualización si el tipo es UPDATE o si existe un registro previo (old_record)
+    const isUpdate = operationType === 'UPDATE' || (!!oldRecord && Object.keys(oldRecord).length > 0);
+    
+    console.log(`📩 Webhook recibido [${operationType}] para cita:`, record?.id);
+    console.log('DEBUG: Campos recibidos en el body:', Object.keys(body).join(', '));
 
     try {
         if (!record || !record.client_id) {
@@ -225,20 +234,31 @@ app.post('/webhook-cita', async (req, res) => {
             }
         }
 
+        const tituloPrincipal = isUpdate 
+            ? `su cita en *DirectoTelmark* ha sido *REPROGRAMADA*`
+            : `su cita ha sido programada con éxito en *DirectoTelmark*`;
+        
+        const subtituloDetalles = isUpdate
+            ? `*Nuevos detalles de su reserva:*`
+            : `*Detalles de su reserva:*`;
+
         const mensaje = `Estimado/a *${clientProfile.full_name}*,
 
-Confirmamos que su cita ha sido programada con éxito en *DirectoTelmark*.
+Le informamos que ${tituloPrincipal}.
 
-*Detalles de su reserva:*
+${subtituloDetalles}
 🗓️ *Fecha:* ${fechaTexto}
 ⏰ *Hora:* ${horaTexto} h
 👤 *Agente:* ${nombreAgente}
 
-Si necesita realizar cualquier cambio o cancelación, por favor contáctenos con antelación.
+${isUpdate 
+    ? 'Si este nuevo horario no le resulta conveniente, por favor contáctenos lo antes posible.' 
+    : 'Si necesita realizar cualquier cambio o cancelación, por favor contáctenos con antelación.'
+}
 
-¡Gracias por confiar en nosotros!`;
+¡Gracias por confiar en *DirectoTelmark*!`;
 
-        console.log(`🚀 Enviando mensaje a ${jid}...`);
+        console.log(`🚀 Enviando mensaje (${operationType}) a ${jid}...`);
         await sock.sendMessage(jid, { text: mensaje });
         console.log(`✅ Mensaje enviado con éxito a ${clientProfile.full_name}`);
         res.status(200).json({ success: true });

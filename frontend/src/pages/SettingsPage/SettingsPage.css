@@ -1,8 +1,9 @@
 .settings-container {
-  padding: 2rem;
-  min-height: 100vh;
-  max-width: 800px;
-  margin: 0 auto;
+  padding: 1.5rem;
+  background-color: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 2rem;
 }
 
 .settings-loading {
@@ -12,35 +13,36 @@
 }
 
 .settings-header {
-  margin-bottom: 2.5rem;
-  text-align: left;
+  margin-bottom: 2rem;
+  text-align: center;
 }
 
 .settings-header h2 {
-  font-size: 2.25rem;
-  font-weight: 800;
+  font-size: 1.8rem;
+  font-weight: 700;
   color: var(--text-main);
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 1rem;
   margin-bottom: 0.5rem;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.5px;
 }
 
 .settings-header .header-icon {
   color: var(--primary);
   background: rgba(249, 200, 14, 0.1);
   padding: 0.5rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius);
 }
 
 .settings-header p {
   color: var(--text-muted);
-  font-size: 1.125rem;
+  font-size: 1.1rem;
 }
 
 .settings-card {
-  background: var(--card-bg);
+  background: white;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   border: 1px solid rgba(226, 232, 240, 0.8);
@@ -49,7 +51,7 @@
 
 .settings-card-header {
   padding: 1.5rem 2rem;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .settings-card-header h3 {
@@ -71,7 +73,7 @@
 
 .settings-divider {
   height: 1px;
-  background: #f1f5f9;
+  background: rgba(226, 232, 240, 0.8);
   margin: 2rem 0;
 }
 
@@ -97,8 +99,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.25rem;
-  border: 1px solid #f1f5f9;
-  border-radius: 0.75rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: var(--radius);
   margin-bottom: 0.75rem;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -175,19 +177,20 @@
 
 .toggle-switch input:checked + .toggle-slider::before {
   transform: translateX(22px);
+  background-color: var(--secondary);
 }
 
 .settings-actions {
   display: flex;
   justify-content: flex-end;
   padding-top: 1rem;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .alert {
   margin: 0 2rem 1rem;
   padding: 1rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius);
   font-weight: 500;
 }
 

@@ -6,7 +6,7 @@ import { profilesService } from '../../services/supabase/profiles.service';
 import { NotificationContext } from '../../context/NotificationContext';
 import { MainLayout } from '../../layouts/MainLayout';
 import Loader from '../../components/Loader/Loader';
-import { Calendar, Clock, User, Phone, Mail, FileText, AlertCircle, CheckCircle2, Users, RefreshCw } from 'lucide-react';
+import { Calendar, Clock, User, Phone, Mail, AlertCircle, CheckCircle2, Users, RefreshCw } from 'lucide-react';
 import './TakeAppointmentPage.css';
 
 const TakeAppointmentPage = () => {
@@ -190,12 +190,11 @@ const TakeAppointmentPage = () => {
 
   return (
     <MainLayout>
-      <div className="take-appointment-page">
-        <div className="take-appointment-container">
-          <header className="page-header">
-            <h1>Nueva Cita para Cliente</h1>
-            <p>Selecciona un agente y rellena los datos para programar la cita.</p>
-          </header>
+      <div className="take-appointment-container">
+        <header className="agents-calendars-header">
+          <h2>Nueva Cita para Cliente</h2>
+          <p>Selecciona un agente y rellena los datos para programar la cita.</p>
+        </header>
 
           {error && (
             <div className="error-message">
@@ -214,7 +213,6 @@ const TakeAppointmentPage = () => {
               <h3 className="section-title"><Users size={18} /> Agente Responsable</h3>
               <div className="form-group full-width">
                 <div className="input-wrapper">
-                  <Users className="input-icon" size={16} />
                   <select
                     name="agentId"
                     value={formData.agentId}
@@ -248,7 +246,6 @@ const TakeAppointmentPage = () => {
                 <div className="form-group">
                   <label>Nombre Completo</label>
                   <div className="input-wrapper">
-                    <User className="input-icon" size={16} />
                     <input
                       type="text"
                       name="clientName"
@@ -262,7 +259,6 @@ const TakeAppointmentPage = () => {
                 <div className="form-group">
                   <label>Teléfono</label>
                   <div className="input-wrapper">
-                    <Phone className="input-icon" size={16} />
                     <input
                       type="tel"
                       name="clientPhone"
@@ -274,9 +270,8 @@ const TakeAppointmentPage = () => {
                   </div>
                 </div>
                 <div className="form-group">
-                  <label>Email</label>
+                  <label>Correo</label>
                   <div className="input-wrapper">
-                    <Mail className="input-icon" size={16} />
                     <input
                       type="email"
                       name="clientEmail"
@@ -297,7 +292,6 @@ const TakeAppointmentPage = () => {
                 <div className="form-group">
                   <label>Fecha</label>
                   <div className="input-wrapper">
-                    <Calendar className="input-icon" size={16} />
                     <input
                       type="date"
                       name="date"
@@ -311,7 +305,6 @@ const TakeAppointmentPage = () => {
                 <div className="form-group">
                   <label>Hora</label>
                   <div className="input-wrapper">
-                    <Clock className="input-icon" size={16} />
                     <input
                       type="time"
                       name="time"
@@ -324,23 +317,11 @@ const TakeAppointmentPage = () => {
               </div>
             </section>
 
-            <div className="form-group full-width">
-              <label><FileText size={16} /> Notas Adicionales</label>
-              <textarea
-                name="notes"
-                value={formData.notes}
-                onChange={handleChange}
-                rows="3"
-                placeholder="Escribe aquí cualquier observación..."
-              ></textarea>
-            </div>
-
             <button type="submit" className="submit-btn" disabled={loading || loadingAgents || agents.length === 0}>
               {loading ? <Loader size="small" text="" /> : 'Confirmar y Guardar Cita'}
             </button>
           </form>
         </div>
-      </div>
     </MainLayout>
   );
 };

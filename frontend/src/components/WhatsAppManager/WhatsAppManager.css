@@ -5,8 +5,8 @@
 }
 
 .whatsapp-card {
-  background: var(--card-bg);
-  border-radius: 20px;
+  background: white;
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.05);
@@ -19,6 +19,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .header-left {
@@ -30,7 +31,7 @@
 .header-icon-wrapper {
   background: var(--primary);
   padding: 0.5rem;
-  border-radius: 10px;
+  border-radius: var(--radius);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -58,7 +59,7 @@
   gap: 0.5rem;
   padding: 0.25rem 0.75rem;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
+  border-radius: var(--radius);
   border: 1px solid rgba(255, 255, 255, 0.2);
   font-size: 0.75rem;
   font-weight: 600;
@@ -83,7 +84,7 @@
 }
 
 .whatsapp-card-body {
-  padding: 2.5rem;
+  padding: 2rem;
 }
 
 .error-banner {
@@ -91,10 +92,11 @@
   border-left: 4px solid var(--error);
   padding: 1rem;
   margin-bottom: 2rem;
-  border-radius: 0 8px 8px 0;
+  border-radius: var(--radius);
   display: flex;
   gap: 1rem;
   align-items: flex-start;
+  border: 1px solid #fee2e2;
 }
 
 .error-banner svg {
@@ -169,7 +171,7 @@
   background: #fff5f5;
   color: #c53030;
   border: 1px solid #fed7d7;
-  border-radius: 12px;
+  border-radius: var(--radius);
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -225,6 +227,7 @@
   font-weight: 700;
   color: #4a5568;
   flex-shrink: 0;
+  border: 1px solid #cbd5e0;
 }
 
 .step-text {
@@ -242,7 +245,7 @@
   background: #fffaf0;
   border: 1px solid #feebc8;
   padding: 1rem;
-  border-radius: 12px;
+  border-radius: var(--radius);
   display: flex;
   gap: 0.75rem;
 }
@@ -262,9 +265,9 @@
 .qr-container {
   padding: 1rem;
   background: white;
-  border-radius: 20px;
+  border-radius: var(--radius);
   box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
-  border: 2px dashed #e2e8f0;
+  border: 2px dashed var(--primary);
   position: relative;
 }
 
@@ -289,10 +292,10 @@
 }
 
 .whatsapp-card-footer {
-  background: #f7fafc;
+  background: #f8fafc;
   padding: 1rem;
   text-align: center;
-  border-top: 1px solid #edf2f7;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .footer-copy {
@@ -310,8 +313,9 @@
   justify-content: center;
   padding: 4rem;
   background: white;
-  border-radius: 20px;
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .spinner {

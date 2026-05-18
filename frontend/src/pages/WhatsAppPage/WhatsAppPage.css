@@ -1,26 +1,42 @@
+.whatsapp-page-container {
+  padding: 1.5rem;
+  background-color: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 2rem;
+  animation: fadeIn 0.4s ease-out;
+}
+
 .whatsapp-page-header {
   margin-bottom: 2rem;
+  text-align: center;
 }
 
-.whatsapp-page-title {
-  display: flex;
+.whatsapp-page-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: center;
+  gap: 1rem;
   margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
 }
 
-.whatsapp-page-title h1 {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--secondary);
-  margin: 0;
-}
-
-.whatsapp-page-title svg {
+.whatsapp-page-header .header-icon {
   color: var(--primary);
+  background: rgba(249, 200, 14, 0.1);
+  padding: 0.5rem;
+  border-radius: var(--radius);
 }
 
-.whatsapp-page-desc {
+.whatsapp-page-header p {
   color: var(--text-muted);
-  font-size: 1rem;
+  font-size: 1.1rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

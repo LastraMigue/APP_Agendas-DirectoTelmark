@@ -4,6 +4,8 @@ import { UserPlus, LogIn, ArrowLeft } from 'lucide-react'
 import useAuth from '../../hooks/useAuth'
 import './ClientSelectionPage.css'
 
+import logo from '../../assets/logo.jpg'
+
 const ClientSelectionPage = () => {
   const { isAuthenticated, signOut, loading } = useAuth()
   const [isFirstCheck, setIsFirstCheck] = useState(true)
@@ -26,7 +28,7 @@ const ClientSelectionPage = () => {
         </button>
         <div className="selection-header">
           <img 
-            src="https://directotelmark.es/wp-content/uploads/2025/02/directotelmarksinfondo.png" 
+            src={logo} 
             alt="Directo Telmark" 
             className="selection-logo"
           />
@@ -36,15 +38,6 @@ const ClientSelectionPage = () => {
 
         <div className="selection-buttons">
           <button 
-            className="selection-button register-button"
-            onClick={() => navigate('/registrarse')}
-          >
-            <UserPlus size={32} />
-            <span className="button-text">Registrarse</span>
-            <span className="button-description">Crear una cuenta nueva</span>
-          </button>
-
-          <button 
             className="selection-button login-button"
             onClick={() => navigate('/iniciar-sesion')}
           >
@@ -52,6 +45,19 @@ const ClientSelectionPage = () => {
             <span className="button-text">Iniciar Sesión</span>
             <span className="button-description">Acceder a tu cuenta</span>
           </button>
+
+          <button 
+            className="selection-button register-button"
+            onClick={() => navigate('/registrarse')}
+          >
+            <UserPlus size={32} />
+            <span className="button-text">Registrarse</span>
+            <span className="button-description">Crear una cuenta nueva</span>
+          </button>
+        </div>
+
+        <div className="selection-footer">
+          <p className="copyright">© 2026 Directo Telmark. Todos los derechos reservados.</p>
         </div>
       </div>
     </div>

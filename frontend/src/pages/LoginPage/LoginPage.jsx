@@ -5,6 +5,8 @@ import LoginForm from '../../components/LoginForm'
 import useAuth from '../../hooks/useAuth'
 import './LoginPage.css'
 
+import logo from '../../assets/logo.jpg'
+
 const LoginPage = () => {
   const { isAuthenticated, signOut, loading } = useAuth()
   const [isFirstCheck, setIsFirstCheck] = useState(true)
@@ -27,7 +29,7 @@ const LoginPage = () => {
         </button>
         <div className="login-header">
           <img
-            src="https://directotelmark.es/wp-content/uploads/2025/02/directotelmarksinfondo.png"
+            src={logo}
             alt="Directo Telmark"
             className="login-logo"
           />
@@ -38,7 +40,7 @@ const LoginPage = () => {
         <LoginForm />
 
         <div className="login-footer">
-          <p>© 2025 Directo Telmark. Todos los derechos reservados.</p>
+          <p className="copyright">© 2026 Directo Telmark. Todos los derechos reservados.</p>
         </div>
       </div>
     </div>

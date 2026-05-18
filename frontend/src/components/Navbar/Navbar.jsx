@@ -80,9 +80,7 @@ const Navbar = () => {
                 <span>{user?.email}</span>
               </div>
               <div className="divider"></div>
-              <button onClick={() => { navigate('/profile'); setShowDropdown(false) }}>
-                <User size={16} /> Mi Perfil
-              </button>
+
               <button onClick={() => { navigate('/dashboard/settings'); setShowDropdown(false) }}>
                 <Settings size={16} /> Configuración
               </button>

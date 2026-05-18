@@ -21,6 +21,7 @@ const DashboardActions = ({ userRole }) => {
     ]
 
     const adminActions = [
+      { id: 'take-appointment', title: 'Coger Citas', icon: <CalendarPlus size={24} />, path: 'appointments/take', desc: 'Reserva citas para clientes' },
       { id: 'agents', title: 'Gestión de Agentes', icon: <Users size={24} />, path: 'agents', desc: 'Administra el equipo y permisos' },
       { id: 'clients', title: 'Gestión de Clientes', icon: <Contact size={24} />, path: 'clients', desc: 'Administra los clientes del sistema' },
       { id: 'reports', title: 'Reportes y Métricas', icon: <BarChart3 size={24} />, path: 'analytics', desc: 'Analiza el rendimiento global' },
@@ -31,7 +32,6 @@ const DashboardActions = ({ userRole }) => {
       { id: 'take-appointment', title: 'Coger Citas', icon: <CalendarPlus size={24} />, path: 'appointments/take', desc: 'Reserva citas para clientes' },
       { id: 'clients', title: 'Gestión de Clientes', icon: <Contact size={24} />, path: 'clients', desc: 'Administra los clientes del sistema' },
       { id: 'history', title: 'Historial de Citas', icon: <Clock size={24} />, path: 'appointments/history', desc: 'Revisa gestiones registradas' },
-      { id: 'whatsapp', title: 'Canal WhatsApp', icon: <MessageSquare size={24} />, path: 'integration/whatsapp', desc: 'Envío de recordatorios' },
     ]
 
     const clientActions = [

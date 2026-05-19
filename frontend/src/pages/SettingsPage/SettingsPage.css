@@ -202,3 +202,69 @@
   color: #166534;
   border: 1px solid #dcfce7;
 }
+
+.phone-split-container {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.prefix-box {
+  flex: 0 0 75px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  height: 52px;
+  transition: all 0.3s;
+}
+
+.prefix-box:focus-within {
+  background-color: #fff;
+  border-color: var(--primary, #f9c80e);
+  box-shadow: 0 0 0 4px rgba(249, 200, 14, 0.1);
+}
+
+.prefix-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.prefix-value::after {
+  content: '';
+  border-left: 4.5px solid transparent;
+  border-right: 4.5px solid transparent;
+  border-top: 5px solid #64748b;
+  display: inline-block;
+}
+
+.prefix-select-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.phone-box {
+  flex: 1;
+}
+
+.phone-box .input-field {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  padding: 14px 16px !important;
+}

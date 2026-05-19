@@ -46,33 +46,42 @@ const CalendarPage = () => {
 
   const getAvailableHours = (date, excludeAppId = null) => {
     const hours = []
+    const SLOT_DURATION = 30 // en minutos
+    
     for (let h = START_HOUR; h < END_HOUR; h++) {
-      // Creamos el intervalo del hueco (1 hora: h:00 a (h+1):00)
-      const slotStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), h, 0, 0)
-      const slotEnd = new Date(slotStart.getTime() + 60 * 60000)
-      
-      // VALIDACIÓN: No permitir horas que ya han pasado hoy
-      const now = new Date()
-      if (date.toDateString() === now.toDateString() && slotEnd <= now) {
-        continue
-      }
-      
-      const isOccupied = appointments.some(app => {
-        if (excludeAppId && app.id === excludeAppId) return false
-        if (app.status === 'cancelled') return false
+      for (let m of [0, 30]) {
+        // Creamos el intervalo del hueco (30 minutos)
+        const slotStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), h, m, 0)
+        const slotEnd = new Date(slotStart.getTime() + SLOT_DURATION * 60000)
         
-        const appStart = new Date(app.start_time || app.start)
-        const appEnd = new Date(app.end_time || app.end || new Date(appStart.getTime() + 60 * 60000))
+        // VALIDACIÓN: No permitir horas que ya han pasado hoy
+        const now = new Date()
+        if (date.toDateString() === now.toDateString() && slotEnd <= now) {
+          continue
+        }
         
-        // Solapamiento: (HuecoInicio < CitaFin) Y (HuecoFin > CitaInicio)
-        return (slotStart < appEnd) && (slotEnd > appStart)
-      })
-      
-      if (!isOccupied) {
-        hours.push({
-          value: h,
-          label: `${h.toString().padStart(2, '0')}:00 - ${(h + 1).toString().padStart(2, '0')}:00`
+        const isOccupied = appointments.some(app => {
+          if (excludeAppId && app.id === excludeAppId) return false
+          if (app.status === 'cancelled') return false
+          
+          const appStart = new Date(app.start_time || app.start)
+          const appEnd = new Date(app.end_time || app.end || new Date(appStart.getTime() + 30 * 60000))
+          
+          // Solapamiento: (HuecoInicio < CitaFin) Y (HuecoFin > CitaInicio)
+          return (slotStart < appEnd) && (slotEnd > appStart)
         })
+        
+        if (!isOccupied) {
+          const hourLabel = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
+          const endH = m === 30 ? h + 1 : h
+          const endM = m === 30 ? 0 : 30
+          const endLabel = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`
+          
+          hours.push({
+            value: `${h}:${m}`,
+            label: `${hourLabel} - ${endLabel}`
+          })
+        }
       }
     }
     return hours
@@ -121,21 +130,35 @@ const CalendarPage = () => {
     if (!isAdmin) return []
     return appointments
       .filter(app => app.created_by === user.id)
-      .map(app => ({
-        id: app.id,
-        title: app.client_name || app.title || 'Cita Programada',
-        start: app.start_time || app.start,
-        end: app.end_time || app.end,
-        allDay: false,
-        extendedProps: {
-          client_id: app.client_id,
-          agent_id: app.agent_id
+      .map(app => {
+        const appStart = new Date(app.start_time || app.start)
+        const isPast = appStart < new Date()
+        return {
+          id: app.id,
+          title: app.client_name || app.title || 'Cita Programada',
+          start: app.start_time || app.start,
+          end: app.end_time || app.end,
+          allDay: false,
+          editable: !isPast && canManage,
+          extendedProps: {
+            client_id: app.client_id,
+            agent_id: app.agent_id
+          }
         }
-      }))
+      })
   }
 
   const handleEventDrop = async (dropInfo) => {
-    const { event } = dropInfo
+    const { event, oldEvent } = dropInfo
+    const oldStart = new Date(oldEvent.start)
+
+    // VALIDACIÓN: No permitir mover citas que ya han pasado en el tiempo
+    if (oldStart < new Date()) {
+      showToast('No puedes mover ni reprogramar citas que ya han pasado.')
+      dropInfo.revert()
+      return
+    }
+
     const newStart = new Date(event.start)
     const newEnd = event.end ? new Date(event.end) : new Date(newStart.getTime() + 60 * 60000)
     const dateStr = newStart.toISOString().split('T')[0]
@@ -192,12 +215,20 @@ const CalendarPage = () => {
     newDateOnly.setHours(0, 0, 0, 0)
     setSelectedDate(newDateOnly)
     setSelectedAgentId(event.extendedProps.agent_id || selectedAgentId)
-    setSelectedHour(newStart.getHours().toString())
+    setSelectedHour(`${newStart.getHours()}:${newStart.getMinutes()}`)
     setIsModalOpen(true)
   }
 
   const handleEventResize = async (resizeInfo) => {
-    const { event } = resizeInfo
+    const { event, oldEvent } = resizeInfo
+    const oldStart = new Date(oldEvent.start)
+
+    // VALIDACIÓN: No permitir redimensionar citas que ya han pasado
+    if (oldStart < new Date()) {
+      showToast('No puedes modificar la duración de citas que ya han pasado.')
+      resizeInfo.revert()
+      return
+    }
     
     const newDate = new Date(event.start)
     newDate.setHours(0, 0, 0, 0)
@@ -214,12 +245,20 @@ const CalendarPage = () => {
     
     setSelectedDate(newDate)
     setSelectedAgentId(event.extendedProps.agent_id || selectedAgentId)
-    setSelectedHour(new Date(event.start).getHours().toString())
+    const startD = new Date(event.start)
+    setSelectedHour(`${startD.getHours()}:${startD.getMinutes()}`)
     setIsModalOpen(true)
   }
 
   const handleEventClick = (clickInfo) => {
     const { event } = clickInfo
+    const eventStart = new Date(event.start)
+
+    // VALIDACIÓN: No permitir abrir el modal para citas pasadas
+    if (eventStart < new Date()) {
+      showToast('No puedes modificar ni reprogramar citas que ya han pasado.')
+      return
+    }
     
     const currentDate = new Date(event.start)
     currentDate.setHours(0, 0, 0, 0)
@@ -234,24 +273,30 @@ const CalendarPage = () => {
     
     setSelectedDate(currentDate)
     setSelectedAgentId(event.extendedProps.agent_id || selectedAgentId)
-    setSelectedHour(new Date(event.start).getHours().toString()) // Pre-seleccionamos la hora actual
+    const startD = new Date(event.start)
+    setSelectedHour(`${startD.getHours()}:${startD.getMinutes()}`) // Pre-seleccionamos la hora actual
     setIsModalOpen(true)
   }
 
   const getAgentEvents = (agentId) => {
     return appointments
       .filter(app => app.agent_id === agentId)
-      .map(app => ({
-        id: app.id,
-        title: app.client_name || app.title || 'Cita Programada',
-        start: app.start_time || app.start,
-        end: app.end_time || app.end,
-        allDay: false,
-        extendedProps: {
-          client_id: app.client_id,
-          agent_id: app.agent_id
+      .map(app => {
+        const appStart = new Date(app.start_time || app.start)
+        const isPast = appStart < new Date()
+        return {
+          id: app.id,
+          title: app.client_name || app.title || 'Cita Programada',
+          start: app.start_time || app.start,
+          end: app.end_time || app.end,
+          allDay: false,
+          editable: !isPast && canManage,
+          extendedProps: {
+            client_id: app.client_id,
+            agent_id: app.agent_id
+          }
         }
-      }))
+      })
   }
 
   const handleDateSelect = (selectInfo) => {
@@ -289,11 +334,14 @@ const CalendarPage = () => {
     try {
       setIsSubmitting(true)
       
+      const [hStr, mStr] = selectedHour.split(':')
+      const hourVal = parseInt(hStr)
+      const minVal = parseInt(mStr || '0')
+
       const startDateTime = new Date(selectedDate)
-      startDateTime.setHours(parseInt(selectedHour), 0, 0, 0)
+      startDateTime.setHours(hourVal, minVal, 0, 0)
       
-      const endDateTime = new Date(selectedDate)
-      endDateTime.setHours(parseInt(selectedHour) + 1, 0, 0, 0)
+      const endDateTime = new Date(startDateTime.getTime() + 30 * 60000)
 
       // VALIDACIÓN: Un cliente no puede tener dos citas el mismo día (sin importar el agente)
       const clientId = reschedulingAppointment?.client_id
@@ -345,9 +393,9 @@ const CalendarPage = () => {
         if (app.status === 'cancelled') return false
 
         const appStart = new Date(app.start_time || app.start)
-        const appEnd = new Date(app.end_time || app.end || new Date(appStart.getTime() + 60 * 60000))
+        const appEnd = new Date(app.end_time || app.end || new Date(appStart.getTime() + 30 * 60000))
 
-        // Nueva cita: de startDateTime a endDateTime (1 hora de duración)
+        // Nueva cita: de startDateTime a endDateTime (30 min de duración)
         // Condición de solapamiento: (NuevoInicio < ViejoFin) Y (NuevoFin > ViejoInicio)
         return (startDateTime < appEnd) && (endDateTime > appStart)
       })
@@ -440,6 +488,7 @@ const CalendarPage = () => {
                 <FullCalendar
                   plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                   initialView="dayGridMonth"
+                  slotDuration="00:30:00"
                   headerToolbar={{
                     left: 'prev,next today',
                     center: 'title',
@@ -491,30 +540,32 @@ const Toast = ({ toast, onClose }) => {
   const isError = toast.type === 'error'
   return (
     <div style={{
-      marginBottom: '1.5rem',
       width: '100%',
       backgroundColor: isError ? '#fef2f2' : '#f0fdf4',
       border: `1px solid ${isError ? '#fca5a5' : '#86efac'}`,
-      borderLeft: `4px solid ${isError ? '#ef4444' : '#22c55e'}`,
+      borderLeft: `5px solid ${isError ? '#ef4444' : '#22c55e'}`,
       borderRadius: '8px',
-      padding: '1rem 1.25rem',
-      boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+      padding: '0.85rem 1.25rem',
+      margin: '0.5rem 0 1.5rem 0',
       display: 'flex',
       alignItems: 'center',
       gap: '0.75rem',
-      animation: 'slideInDown 0.3s ease',
+      fontFamily: 'inherit',
+      boxSizing: 'border-box'
     }}>
-      <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{isError ? '⛔' : '✅'}</span>
-      <p style={{ margin: 0, color: isError ? '#b91c1c' : '#15803d', fontSize: '1rem', fontWeight: '500', flex: 1 }}>
+      <p style={{ margin: 0, color: isError ? '#991b1b' : '#166534', fontSize: '0.92rem', fontWeight: '500', flex: 1, lineHeight: '1.4' }}>
         {toast.message}
       </p>
       <button
         onClick={onClose}
         style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          color: isError ? '#b91c1c' : '#15803d', fontSize: '1.2rem',
-          flexShrink: 0, padding: '0 0.5rem', lineHeight: 1
+          color: isError ? '#991b1b' : '#166534', fontSize: '1.3rem',
+          flexShrink: 0, padding: '0 0.5rem', lineHeight: 1,
+          opacity: 0.6, transition: 'opacity 0.2s'
         }}
+        onMouseEnter={(e) => e.target.style.opacity = 1}
+        onMouseLeave={(e) => e.target.style.opacity = 0.6}
         aria-label="Cerrar aviso"
       >×</button>
     </div>

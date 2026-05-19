@@ -20,7 +20,7 @@
 }
 
 .logo-img {
-  height: 50px;
+  height: 60px;
   width: auto;
   object-fit: contain;
 }
@@ -210,3 +210,29 @@
   border: 2px solid var(--card-bg);
   padding: 0 4px;
 }
+
+.navbar-clock {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 1.5rem;
+  padding: 0.4rem 0.8rem;
+  background: var(--secondary);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  font-weight: 700;
+  font-family: monospace;
+  font-size: 1rem;
+}
+
+.clock-icon {
+  color: var(--primary);
+  animation: pulseClock 2s infinite alternate;
+}
+
+@keyframes pulseClock {
+  from { opacity: 0.7; }
+  to { opacity: 1; }
+}
+

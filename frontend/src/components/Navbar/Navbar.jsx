@@ -1,25 +1,37 @@
 import { useContext, useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../context/AuthContext'
-import { NotificationContext } from '../../context/NotificationContext'
-import { User, LogOut, Settings, Bell, ChevronDown } from 'lucide-react'
-import NotificationList from '../NotificationList/NotificationList'
+import { User, LogOut, Settings, ChevronDown, Clock } from 'lucide-react'
+import logoImg from '../../assets/logo.jpg'
 import './Navbar.css'
 
 const Navbar = () => {
   const { user, signOut } = useContext(AuthContext)
-  const { unreadCount } = useContext(NotificationContext)
   const [showDropdown, setShowDropdown] = useState(false)
-  const [showNotifications, setShowNotifications] = useState(false)
   const navigate = useNavigate()
-  const notificationRef = useRef(null)
   const userDropdownRef = useRef(null)
+  const [time, setTime] = useState('')
+
+  useEffect(() => {
+    const updateTime = () => {
+      const options = {
+        timeZone: 'Europe/Madrid',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      };
+      const formatter = new Intl.DateTimeFormat('es-ES', options);
+      setTime(formatter.format(new Date()));
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
-        setShowNotifications(false)
-      }
       if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
         setShowDropdown(false)
       }
@@ -38,31 +50,21 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      <div className="navbar-logo" onClick={() => navigate('/dashboard')}>
-        <img
-          src="https://directotelmark.es/wp-content/uploads/2025/02/directotelmarksinfondo.png"
-          alt="Directo Telmark"
-          className="logo-img"
-        />
+      <div className="navbar-left" style={{ display: 'flex', alignItems: 'center' }}>
+        <div className="navbar-logo" onClick={() => navigate('/dashboard')}>
+          <img
+            src={logoImg}
+            alt="Directo Telmark"
+            className="logo-img"
+          />
+        </div>
+        <div className="navbar-clock">
+          <Clock size={16} className="clock-icon" />
+          <span>{time}</span>
+        </div>
       </div>
 
       <div className="navbar-actions">
-        <div className="notification-wrapper" ref={notificationRef}>
-          <button
-            className={`icon-button ${showNotifications ? 'active' : ''}`}
-            onClick={() => setShowNotifications(!showNotifications)}
-          >
-            <Bell size={20} />
-            {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
-          </button>
-
-          {showNotifications && (
-            <div className="notifications-dropdown">
-              <NotificationList />
-            </div>
-          )}
-        </div>
-
         <div className="user-profile" ref={userDropdownRef}>
           <div
             className="user-info"

@@ -15,6 +15,21 @@ export const profilesService = {
     return data || []
   },
 
+  // OBTENER TODO EL PERSONAL (AGENTES, ADMINS Y SUPERVISORES)
+  async getStaff() {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('role', ['agent', 'admin', 'supervisor'])
+      .order('full_name', { ascending: true })
+    if (error) {
+      console.error('Error al cargar personal:', error.message)
+      return []
+    }
+    return data || []
+  },
+
+
   // OBTENER CLIENTES
   async getClients() {
     const { data, error } = await supabase

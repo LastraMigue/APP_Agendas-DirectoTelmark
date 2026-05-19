@@ -68,29 +68,30 @@ const ClientBookingPage = () => {
 
   const fetchData = async () => {
     try {
-      console.log('Cargando personal (agentes y admins) y citas...');
-      const [fetchedAgents, fetchedAdmins, fetchedAppointments] = await Promise.all([
+      console.log('Cargando agentes y citas...');
+      const [fetchedAgents, fetchedAppointments] = await Promise.all([
         profilesService.getAgents(),
-        profilesService.getAdmins(),
         appointmentsService.getAll()
       ])
       
-      const allStaff = [...(fetchedAgents || []), ...(fetchedAdmins || [])]
-      
       console.log('Datos cargados:', { 
-        staff: allStaff.length, 
+        agents: fetchedAgents.length, 
         citas: fetchedAppointments?.length 
       })
-      setAgents(allStaff)
+      setAgents(fetchedAgents || [])
       setAppointments(fetchedAppointments || [])
     } catch (error) {
       console.error('ERROR AL CARGAR DATOS (500?):', error)
     }
   }
 
+
   const myAppointments = useMemo(() => {
     if (!clientId) return []
-    return appointments.filter(app => app.client_id === clientId && app.status !== 'cancelled')
+    return appointments.filter(app => {
+      const isCancelled = app.description && app.description.includes('[Cancelada]')
+      return app.client_id === clientId && !isCancelled
+    })
   }, [appointments, clientId])
 
   const calendarEvents = useMemo(() => {
@@ -110,7 +111,8 @@ const ClientBookingPage = () => {
     
     return appointments
       .filter(app => {
-        if (app.status === 'cancelled') return false
+        const isCancelled = app.description && app.description.includes('[Cancelada]')
+        if (isCancelled) return false
         const appDateStr = getLocalDateString(new Date(app.start_time))
         return appDateStr === dateStr
       })
@@ -215,7 +217,6 @@ const ClientBookingPage = () => {
         title: `Cita con ${agent.full_name} a las ${selectedSlot}`,
         start_time: startDateTime.toISOString(),
         end_time: endDateTime.toISOString(),
-        status: 'scheduled',
         description: 'Cita reservada por el cliente desde la web.'
       }
 

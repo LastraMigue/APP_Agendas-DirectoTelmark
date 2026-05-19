@@ -9,17 +9,17 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 2px solid var(--border-color);
 }
 
 .whatsapp-card-header {
-  background: var(--secondary);
-  padding: 1.5rem 2rem;
-  color: white;
+  background: white;
+  padding: 1.5rem 2rem 1rem 2rem;
+  color: var(--text-main);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 2px solid var(--primary);
 }
 
 .header-left {
@@ -29,7 +29,7 @@
 }
 
 .header-icon-wrapper {
-  background: var(--primary);
+  background: rgba(249, 200, 14, 0.1);
   padding: 0.5rem;
   border-radius: var(--radius);
   display: flex;
@@ -38,33 +38,35 @@
 }
 
 .header-icon-wrapper svg {
-  color: var(--secondary);
+  color: var(--primary);
 }
 
 .header-info h2 {
   margin: 0;
-  font-size: 1.25rem;
-  color: white;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-main);
 }
 
 .header-info p {
   margin: 0;
   font-size: 0.85rem;
-  color: #a0aec0;
+  color: var(--text-muted);
 }
 
 .status-badge {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  background: rgba(255, 255, 255, 0.1);
+  padding: 0.4rem 0.8rem;
+  background: white;
   border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid var(--border-color);
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  color: var(--text-main);
 }
 
 .status-dot {
@@ -219,15 +221,15 @@
 .step-number {
   width: 32px;
   height: 32px;
-  background: #edf2f7;
+  background: var(--secondary);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  color: #4a5568;
+  color: var(--primary);
   flex-shrink: 0;
-  border: 1px solid #cbd5e0;
+  border: 2px solid var(--border-color);
 }
 
 .step-text {
@@ -242,18 +244,20 @@
 
 .setup-tip {
   margin-top: 2rem;
-  background: #fffaf0;
-  border: 1px solid #feebc8;
+  background: #fffbef;
+  border: 2px solid var(--primary);
   padding: 1rem;
   border-radius: var(--radius);
   display: flex;
   gap: 0.75rem;
+  align-items: center;
 }
 
 .setup-tip p {
   margin: 0;
-  font-size: 0.75rem;
-  color: #9c4221;
+  font-size: 0.8rem;
+  color: var(--text-main);
+  font-weight: 500;
 }
 
 .qr-section {

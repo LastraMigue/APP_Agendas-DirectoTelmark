@@ -1,19 +1,22 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../services/supabase/client';
 import { appointmentsService } from '../../services/supabase/appointments.service';
 import { profilesService } from '../../services/supabase/profiles.service';
-import { NotificationContext } from '../../context/NotificationContext';
 import { MainLayout } from '../../layouts/MainLayout';
 import Loader from '../../components/Loader/Loader';
 import { Calendar, Clock, User, Phone, Mail, AlertCircle, CheckCircle2, Users, RefreshCw } from 'lucide-react';
+import { AuthContext } from '../../context/AuthContext';
 import './TakeAppointmentPage.css';
 
 const TakeAppointmentPage = () => {
   const navigate = useNavigate();
-  const { addNotification } = useContext(NotificationContext);
+  const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [agents, setAgents] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [selectedClientId, setSelectedClientId] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loadingAgents, setLoadingAgents] = useState(true);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
@@ -32,13 +35,13 @@ const TakeAppointmentPage = () => {
     try {
       setLoadingAgents(true);
       setError(null);
-      console.log('Cargando agentes desde profiles...');
+      console.log('Cargando personal desde profiles...');
       
-      const agentsList = await profilesService.getAgents();
-      setAgents(agentsList || []);
+      const staffList = await profilesService.getStaff();
+      setAgents(staffList || []);
     } catch (err) {
       console.error('Error:', err);
-      setError(`Error al cargar agentes: ${err.message}`);
+      setError(`Error al cargar personal: ${err.message}`);
     } finally {
       setLoadingAgents(false);
     }
@@ -48,7 +51,54 @@ const TakeAppointmentPage = () => {
     fetchAgents();
   }, []);
 
+  useEffect(() => {
+    const loadInitialData = async () => {
+      if (user) {
+        try {
+          // Verificar rol de admin
+          const profile = await profilesService.getById(user.id);
+          const role = profile?.role || (user.email === 'admin@test.com' ? 'admin' : 'agente');
+          setIsAdmin(role === 'admin' || role === 'supervisor');
+
+          // Cargar clientes
+          const clientsList = await profilesService.getClients();
+          setClients(clientsList || []);
+        } catch (err) {
+          console.error('Error loading initial data:', err);
+        }
+      }
+    };
+    loadInitialData();
+  }, [user]);
+
+  useEffect(() => {
+    if (user && agents.length > 0) {
+      if (!formData.agentId && !isAdmin) {
+        const currentUserProfile = agents.find(a => a.id === user.id);
+        if (currentUserProfile) {
+          setFormData(prev => ({ ...prev, agentId: currentUserProfile.id }));
+        }
+      }
+    }
+  }, [agents, user, isAdmin]);
+
+  const [clientSearchQuery, setClientSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const filteredClients = useMemo(() => {
+    if (!clientSearchQuery) return [];
+    const query = clientSearchQuery.toLowerCase().trim();
+    return clients.filter(c => 
+      (c.full_name || '').toLowerCase().includes(query) ||
+      (c.phone || '').toLowerCase().includes(query) ||
+      (c.email || '').toLowerCase().includes(query)
+    );
+  }, [clients, clientSearchQuery]);
+
+
+
   const handleChange = (e) => {
+
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -85,7 +135,8 @@ const TakeAppointmentPage = () => {
       // 3. Verificar si el cliente ya tiene una cita ese día
       const existingApps = await appointmentsService.getAll();
       const hasAppToday = existingApps.some(app => {
-        if (app.client_id !== clientProfile.id || app.status === 'cancelled') return false;
+        const isCancelled = app.description && app.description.includes('[Cancelada]');
+        if (app.client_id !== clientProfile.id || isCancelled) return false;
         const appDate = new Date(app.start_time).toISOString().split('T')[0];
         return appDate === formData.date;
       });
@@ -96,7 +147,8 @@ const TakeAppointmentPage = () => {
 
       // 3. Verificar si YA HAY una cita a esa hora (Restricción Global)
       const isHourOccupied = existingApps.some(app => {
-        if (app.status === 'cancelled') return false;
+        const isCancelled = app.description && app.description.includes('[Cancelada]');
+        if (isCancelled) return false;
         
         const appDate = new Date(app.start_time);
         const appDateStr = appDate.toISOString().split('T')[0];
@@ -122,45 +174,8 @@ const TakeAppointmentPage = () => {
         title: `Cita: ${clientProfile.full_name}`,
         description: formData.notes,
         start_time: startTime.toISOString(),
-        end_time: endTime.toISOString(),
-        status: 'scheduled',
-        priority: 'normal'
+        end_time: endTime.toISOString()
       });
-
-      // Notify Agent
-      await addNotification({
-        user_id: formData.agentId,
-        title: 'Nueva Cita Asignada',
-        message: `Tienes una nueva cita con ${clientProfile.full_name} para el ${formData.date} a las ${formData.time}.`,
-        type: 'appointment'
-      });
-
-      // Notify Client
-      await addNotification({
-        user_id: clientProfile.id,
-        title: 'Cita Confirmada',
-        message: `Tu cita ha sido programada para el ${formData.date} a las ${formData.time}.`,
-        type: 'appointment'
-      });
-
-      // Notify Admins (excluding the agent and client if they are admins)
-      try {
-        const admins = await profilesService.getAdmins();
-        const agentName = agents.find(a => a.id === formData.agentId)?.full_name || 'un agente';
-        
-        for (const admin of admins) {
-          if (admin.id !== formData.agentId && admin.id !== clientProfile.id) {
-            await addNotification({
-              user_id: admin.id,
-              title: 'Nueva Cita Registrada',
-              message: `El agente ${agentName} ha registrado una cita para ${clientProfile.full_name} el ${formData.date}.`,
-              type: 'appointment'
-            });
-          }
-        }
-      } catch (adminErr) {
-        console.error('Error notifying admins:', adminErr);
-      }
 
       setSuccess(true);
       // Redirigir al dashboard tras 2 segundos para que el agente vea el éxito
@@ -219,14 +234,14 @@ const TakeAppointmentPage = () => {
                     onChange={handleChange}
                     required
                     className="agent-select"
-                    disabled={loadingAgents}
+                    disabled={loadingAgents || !isAdmin}
                   >
                     <option value="">
                       {loadingAgents ? 'Cargando agentes...' : '-- Selecciona un agente --'}
                     </option>
                     {agents.map(agent => (
                       <option key={agent.id} value={agent.id}>
-                        {agent.full_name}
+                        {agent.full_name || agent.name || agent.email} {agent.id === user?.id ? '(Tú)' : ''}
                       </option>
                     ))}
                   </select>
@@ -242,6 +257,56 @@ const TakeAppointmentPage = () => {
             {/* SECCIÓN CLIENTE */}
             <section className="form-section">
               <h3 className="section-title"><User size={18} /> Información del Cliente</h3>
+              
+              <div className="form-group full-width client-search-wrapper" style={{ marginBottom: '1.5rem' }}>
+                <label>Buscar Cliente Registrado (Nombre, Teléfono o Correo)</label>
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    placeholder="Empieza a escribir el nombre, teléfono o correo..."
+                    value={clientSearchQuery}
+                    onChange={(e) => {
+                      setClientSearchQuery(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  />
+                </div>
+
+                {showSuggestions && filteredClients.length > 0 && (
+                  <div className="search-suggestions-dropdown">
+                    {filteredClients.map(c => (
+                      <div
+                        key={c.id}
+                        className="suggestion-item"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            clientName: c.full_name || '',
+                            clientPhone: c.phone || '',
+                            clientEmail: c.email || ''
+                          }));
+                          setClientSearchQuery(c.full_name);
+                          setSelectedClientId(c.id);
+                          setShowSuggestions(false);
+                        }}
+                      >
+                        <div className="suggestion-name">{c.full_name}</div>
+                        <div className="suggestion-meta">
+                          <span>{c.phone || 'Sin teléfono'}</span> • <span>{c.email || 'Sin correo'}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {showSuggestions && clientSearchQuery && filteredClients.length === 0 && (
+                  <div className="search-suggestions-dropdown empty">
+                    No se encontraron clientes coincidentes.
+                  </div>
+                )}
+              </div>
+
               <div className="form-grid">
                 <div className="form-group">
                   <label>Nombre Completo</label>

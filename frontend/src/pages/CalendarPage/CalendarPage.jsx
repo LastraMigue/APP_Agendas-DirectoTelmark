@@ -59,7 +59,8 @@ const CalendarPage = () => {
       
       const isOccupied = appointments.some(app => {
         if (excludeAppId && app.id === excludeAppId) return false
-        if (app.status === 'cancelled') return false
+        const isCancelled = app.description && app.description.includes('[Cancelada]')
+        if (isCancelled) return false
         
         const appStart = new Date(app.start_time || app.start)
         const appEnd = new Date(app.end_time || app.end || new Date(appStart.getTime() + 60 * 60000))
@@ -78,6 +79,8 @@ const CalendarPage = () => {
     return hours
   }
 
+  const [activeAgentId, setActiveAgentId] = useState('')
+
   useEffect(() => {
     fetchData()
   }, [])
@@ -85,11 +88,22 @@ const CalendarPage = () => {
   useEffect(() => {
     if (agents.length > 0) {
       setAvailableAgents(agents)
+      
+      // Inicializar activeAgentId al usuario actual si existe en la lista de personal
+      if (!activeAgentId) {
+        const currentUserProfile = agents.find(a => a.id === user?.id)
+        if (currentUserProfile) {
+          setActiveAgentId(currentUserProfile.id)
+        } else {
+          setActiveAgentId(agents[0].id)
+        }
+      }
+
       if (!selectedAgentId) {
         setSelectedAgentId(agents[0].id)
       }
     }
-  }, [agents])
+  }, [agents, user])
 
   useEffect(() => {
     if (isModalOpen && selectedDate) {
@@ -101,12 +115,12 @@ const CalendarPage = () => {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const [fetchedAgents, fetchedAppointments] = await Promise.all([
-        profilesService.getAgents(),
+      const [fetchedStaff, fetchedAppointments] = await Promise.all([
+        profilesService.getStaff(),
         appointmentsService.getAll()
       ])
       
-      setAgents(fetchedAgents || [])
+      setAgents(fetchedStaff || [])
       setAppointments(fetchedAppointments || [])
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -117,22 +131,7 @@ const CalendarPage = () => {
     }
   }
 
-  const getAdminEvents = () => {
-    if (!isAdmin) return []
-    return appointments
-      .filter(app => app.created_by === user.id)
-      .map(app => ({
-        id: app.id,
-        title: app.client_name || app.title || 'Cita Programada',
-        start: app.start_time || app.start,
-        end: app.end_time || app.end,
-        allDay: false,
-        extendedProps: {
-          client_id: app.client_id,
-          agent_id: app.agent_id
-        }
-      }))
-  }
+
 
   const handleEventDrop = async (dropInfo) => {
     const { event } = dropInfo
@@ -159,7 +158,8 @@ const CalendarPage = () => {
     // VALIDACIÓN: si el día destino ya tiene una cita de este cliente → revert sin modal
     const conflictingApp = appointments.find(app => {
       if (String(app.id) === String(event.id)) return false
-      if (app.status === 'cancelled') return false
+      const isCancelled = app.description && app.description.includes('[Cancelada]')
+      if (isCancelled) return false
 
       const isSameClientId = clientId && app.client_id === clientId
       const appClientName = (app.client_name || app.title || '').replace(/^Cita:\s*/i, '').trim()
@@ -240,7 +240,10 @@ const CalendarPage = () => {
 
   const getAgentEvents = (agentId) => {
     return appointments
-      .filter(app => app.agent_id === agentId)
+      .filter(app => {
+        const isCancelled = app.description && app.description.includes('[Cancelada]')
+        return app.agent_id === agentId && !isCancelled
+      })
       .map(app => ({
         id: app.id,
         title: app.client_name || app.title || 'Cita Programada',
@@ -315,7 +318,8 @@ const CalendarPage = () => {
         if (reschedulingAppointment && String(app.id) === String(reschedulingAppointment.id)) return false
 
         // 2. Ignoramos citas canceladas
-        if (app.status === 'cancelled') return false
+        const isCancelled = app.description && app.description.includes('[Cancelada]')
+        if (isCancelled) return false
 
         // 3. Comprobamos si es el mismo cliente (por ID o por nombre)
         const isSameClientId = clientId && app.client_id === clientId
@@ -342,7 +346,8 @@ const CalendarPage = () => {
         if (reschedulingAppointment && String(app.id) === String(reschedulingAppointment.id)) return false
 
         // 2. Ignoramos citas canceladas
-        if (app.status === 'cancelled') return false
+        const isCancelled = app.description && app.description.includes('[Cancelada]')
+        if (isCancelled) return false
 
         const appStart = new Date(app.start_time || app.start)
         const appEnd = new Date(app.end_time || app.end || new Date(appStart.getTime() + 60 * 60000))
@@ -360,10 +365,13 @@ const CalendarPage = () => {
 
       if (reschedulingAppointment) {
         // REPROGRAMAR: actualizar la cita existente (no crear una nueva)
+        const originalApp = appointments.find(app => app.id === reschedulingAppointment.id)
+        const currentDesc = originalApp?.description || ''
         const updatedData = {
           start_time: startDateTime.toISOString(),
           end_time: endDateTime.toISOString(),
-          agent_id: selectedAgentId
+          agent_id: selectedAgentId,
+          description: currentDesc.includes('[Reprogramada]') ? currentDesc : (currentDesc ? `${currentDesc} [Reprogramada]` : '[Reprogramada]')
         }
         await appointmentsService.update(reschedulingAppointment.id, updatedData)
       }
@@ -414,6 +422,24 @@ const CalendarPage = () => {
           <p>{isAdmin || isSupervisor ? 'Visualiza y gestiona las citas de todos los agentes del sistema.' : 'Visualiza y gestiona tus citas programadas.'}</p>
         </header>
 
+        {isAdmin && (
+          <div className="agent-selector-container">
+            <label htmlFor="active-agent-select"><strong>Seleccionar Agente: </strong></label>
+            <select
+              id="active-agent-select"
+              value={activeAgentId}
+              onChange={(e) => setActiveAgentId(e.target.value)}
+              className="agent-select"
+            >
+              {agents.map(agent => (
+                <option key={agent.id} value={agent.id}>
+                  {agent.full_name || agent.name || agent.email} {agent.id === user?.id ? '(Tú)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <Toast toast={toast} onClose={() => setToast(null)} />
 
         {agents.length === 0 && !(isAdmin || isSupervisor) ? (
@@ -426,8 +452,10 @@ const CalendarPage = () => {
 
             {agents
               .filter(agent => {
-                // Admin y Supervisor ven todos los agentes; un agente solo se ve a sí mismo
-                if (isAdmin || isSupervisor) return true
+                if (isAdmin) {
+                  return agent.id === activeAgentId
+                }
+                if (isSupervisor) return true
                 return (
                   agent.id === user?.id ||
                   agent.email?.toLowerCase() === userEmail ||

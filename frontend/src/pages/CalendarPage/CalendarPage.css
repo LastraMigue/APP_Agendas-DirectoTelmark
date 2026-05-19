@@ -246,3 +246,32 @@
     transform: translateX(0);
   }
 }
+
+.agent-selector-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.25rem;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  max-width: 650px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.agent-selector-container label {
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.agent-selector-container .agent-select {
+  width: 100%;
+  max-width: 400px;
+}
+
+

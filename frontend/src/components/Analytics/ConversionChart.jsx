@@ -3,9 +3,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import './Analytics.css'
 
 const COLORS = {
-  'Confirmadas': '#10B981', // Emerald
+  'Completadas': '#10B981', // Emerald
   'Canceladas': '#EF4444',  // Red
-  'Completadas': '#3B82F6', // Blue
   'Pendientes': '#F59E0B'   // Amber
 }
 

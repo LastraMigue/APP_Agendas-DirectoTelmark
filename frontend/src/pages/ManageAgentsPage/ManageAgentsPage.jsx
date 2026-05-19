@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { MainLayout } from '../../layouts/MainLayout'
 import { profilesService } from '../../services/supabase/profiles.service'
-import { Users } from 'lucide-react'
+import { User } from 'lucide-react'
 import Loader from '../../components/Loader/Loader'
 import '../ManageClientsPage/ManageClientsPage.css'
 
@@ -104,17 +104,18 @@ const ManageAgentsPage = () => {
     <MainLayout>
       <div className="manage-clients-container">
         <header className="manage-clients-header">
-          <h2><Users size={28} className="header-icon" /> Gestión de Agentes</h2>
-          <p>Administra los agentes registrados en el sistema</p>
+          <h2>Gestión de Agentes</h2>
+          <p>Administra los agentes registrados en el sistema.</p>
         </header>
 
         <div className="manage-clients-card">
           <div className="card-header">
-            <h3>Listado de Agentes</h3>
+            <h3><User size={20} className="agent-icon" color="var(--primary)" /> Listado de Agentes</h3>
             <button className="btn-create" onClick={() => setShowCreateModal(true)}>
               + Nuevo Agente
             </button>
           </div>
+          <div className="card-divider"></div>
 
           {error && <div className="alert alert-error">{error}</div>}
           {success && <div className="alert alert-success">{success}</div>}

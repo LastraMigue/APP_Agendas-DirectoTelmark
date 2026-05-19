@@ -44,15 +44,15 @@ const ClientAppointmentsPage = () => {
 
           if (currentClientId) {
             setClientId(currentClientId)
-            const [allAppointments, allAgents] = await Promise.all([
+            const [allAppointments, allStaff] = await Promise.all([
               appointmentsService.getAll(),
-              profilesService.getAgents()
+              profilesService.getStaff()
             ])
             
             // Filtramos citas para este cliente
             const clientAppointments = allAppointments.filter(app => app.client_id === currentClientId)
             setAppointments(clientAppointments)
-            setAgents(allAgents)
+            setAgents(allStaff)
           } else {
             console.warn('No se encontró un perfil de cliente para este usuario.')
           }
@@ -67,6 +67,25 @@ const ClientAppointmentsPage = () => {
     fetchData()
   }, [user])
 
+  const handleCancel = async (id, currentDescription) => {
+    if (!window.confirm('¿Estás seguro de que deseas cancelar esta cita?')) return
+    try {
+      const newDescription = currentDescription 
+        ? `${currentDescription} [Cancelada]` 
+        : '[Cancelada]'
+      
+      await appointmentsService.update(id, { description: newDescription })
+      
+      // Update local state
+      setAppointments(prev => prev.map(app => 
+        app.id === id ? { ...app, description: newDescription } : app
+      ))
+    } catch (error) {
+      console.error('Error al cancelar la cita:', error)
+      alert('Error al cancelar la cita: ' + (error.message || error))
+    }
+  }
+
   const { upcoming, past } = useMemo(() => {
     const now = new Date()
     const upcomingList = []
@@ -74,7 +93,8 @@ const ClientAppointmentsPage = () => {
 
     appointments.forEach(app => {
       const appDate = new Date(app.start_time)
-      if (appDate >= now && app.status !== 'cancelled') {
+      const isCancelled = app.description && app.description.includes('[Cancelada]')
+      if (appDate >= now && !isCancelled) {
         upcomingList.push(app)
       } else {
         pastList.push(app)
@@ -102,9 +122,10 @@ const ClientAppointmentsPage = () => {
     return agent ? agent.full_name : 'Agente Desconocido'
   }
 
-  const getStatusBadge = (status, endTimeStr) => {
+  const getStatusBadge = (description, endTimeStr) => {
     const isPast = new Date(endTimeStr) < new Date()
-    if (status === 'cancelled') {
+    const isCancelled = description && description.includes('[Cancelada]')
+    if (isCancelled) {
       return <span className="status-badge cancelled"><XCircle size={14} /> Cancelada</span>
     }
     if (isPast) {
@@ -168,10 +189,15 @@ const ClientAppointmentsPage = () => {
                     <div className="cards-grid">
                       {upcoming.map(app => {
                         const { date, time } = formatDateTime(app.start_time)
+                        const cleanDesc = (app.description || '')
+                          .replace('[Cancelada]', '')
+                          .replace('[Reprogramada]', '')
+                          .replace('Cita reservada por el cliente desde la web.', '')
+                          .trim()
                         return (
                           <div key={app.id} className="appointment-card upcoming">
                             <div className="card-header">
-                              {getStatusBadge(app.status, app.end_time)}
+                              {getStatusBadge(app.description, app.end_time)}
                             </div>
                             <h3 className="card-title">{app.title || 'Cita Programada'}</h3>
                             <div className="card-details">
@@ -188,9 +214,15 @@ const ClientAppointmentsPage = () => {
                                 <span>Con agente: <strong>{getAgentName(app.agent_id)}</strong></span>
                               </div>
                             </div>
-                            {app.description && (
-                              <p className="card-description">{app.description}</p>
+                            {cleanDesc && (
+                              <p className="card-description">{cleanDesc}</p>
                             )}
+                            <button
+                              onClick={() => handleCancel(app.id, app.description)}
+                              className="btn-cancel-appointment"
+                            >
+                              Cancelar Cita
+                            </button>
                           </div>
                         )
                       })}
@@ -210,10 +242,15 @@ const ClientAppointmentsPage = () => {
                     <div className="cards-grid">
                       {past.map(app => {
                         const { date, time } = formatDateTime(app.start_time)
+                        const cleanDesc = (app.description || '')
+                          .replace('[Cancelada]', '')
+                          .replace('[Reprogramada]', '')
+                          .replace('Cita reservada por el cliente desde la web.', '')
+                          .trim()
                         return (
                           <div key={app.id} className="appointment-card past">
                             <div className="card-header">
-                              {getStatusBadge(app.status, app.end_time)}
+                              {getStatusBadge(app.description, app.end_time)}
                             </div>
                             <h3 className="card-title">{app.title || 'Cita Programada'}</h3>
                             <div className="card-details">
@@ -230,8 +267,8 @@ const ClientAppointmentsPage = () => {
                                 <span>Con agente: <strong>{getAgentName(app.agent_id)}</strong></span>
                               </div>
                             </div>
-                            {app.description && (
-                              <p className="card-description">{app.description}</p>
+                            {cleanDesc && (
+                              <p className="card-description">{cleanDesc}</p>
                             )}
                           </div>
                         )

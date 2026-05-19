@@ -3,15 +3,18 @@ import { MainLayout } from '../../layouts/MainLayout'
 import { AuthContext } from '../../context/AuthContext'
 import { supabase } from '../../services/supabase/client'
 import { appointmentsService } from '../../services/supabase/appointments.service'
-import { Calendar, Clock, CheckCircle2, XCircle, AlertCircle, CalendarDays } from 'lucide-react'
+import { Calendar, Clock, CheckCircle2, XCircle, AlertCircle, CalendarDays, UserSquare2 } from 'lucide-react'
 import Loader from '../../components/Loader/Loader'
 import './AgentAppointmentsPage.css'
 
 const AgentAppointmentsPage = () => {
   const { user } = useContext(AuthContext)
   const [appointments, setAppointments] = useState([])
+  const [agents, setAgents] = useState([])
   const [loading, setLoading] = useState(true)
   const [agentId, setAgentId] = useState(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [selectedFilterAgentId, setSelectedFilterAgentId] = useState('')
   const [activeTab, setActiveTab] = useState('upcoming') // 'upcoming' or 'past'
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -20,20 +23,32 @@ const AgentAppointmentsPage = () => {
       setLoading(true)
       try {
         if (user) {
-          // Buscamos el perfil del agente en la tabla unificada
+          // Fetch staff list to map names
+          const { data: agentsData } = await supabase
+            .from('profiles')
+            .select('*')
+            .in('role', ['agent', 'admin', 'supervisor'])
+          setAgents(agentsData || [])
+
+          // Buscamos el perfil del usuario actual en la tabla profiles
           const { data: profileData } = await supabase
             .from('profiles')
-            .select('id')
+            .select('id, role')
             .eq('id', user.id)
-            .eq('role', 'agent')
             .maybeSingle()
 
+          const userRole = profileData?.role || (user.email === 'admin@test.com' ? 'admin' : 'agente')
           const currentAgentId = profileData?.id
+          const isUserAdmin = userRole === 'admin' || userRole === 'supervisor'
+          setIsAdmin(isUserAdmin)
 
-          if (currentAgentId) {
+          const allAppointments = await appointmentsService.getAll()
+
+          if (isUserAdmin) {
+            setAppointments(allAppointments)
+            setSelectedFilterAgentId(user.id)
+          } else if (currentAgentId) {
             setAgentId(currentAgentId)
-            const allAppointments = await appointmentsService.getAll()
-
             // Filtramos las citas de este agente
             const agentAppointments = allAppointments.filter(app => app.agent_id === currentAgentId)
             setAppointments(agentAppointments)
@@ -48,16 +63,47 @@ const AgentAppointmentsPage = () => {
       }
     }
 
+
+
     fetchAgentAndAppointments()
   }, [user])
+
+  const handleCancel = async (id, currentDescription) => {
+    if (!window.confirm('¿Estás seguro de que deseas cancelar esta cita?')) return
+    try {
+      const newDescription = currentDescription 
+        ? `${currentDescription} [Cancelada]` 
+        : '[Cancelada]'
+      
+      await appointmentsService.update(id, { description: newDescription })
+      
+      // Update local state
+      setAppointments(prev => prev.map(app => 
+        app.id === id ? { ...app, description: newDescription } : app
+      ))
+    } catch (error) {
+      console.error('Error al cancelar la cita:', error)
+      alert('Error al cancelar la cita: ' + (error.message || error))
+    }
+  }
+
+  const getAgentName = (agentId) => {
+    const agent = agents.find(a => a.id === agentId)
+    return agent ? agent.full_name : 'Agente Desconocido'
+  }
 
   const { upcoming, past } = useMemo(() => {
     const now = new Date()
     const upcomingList = []
     const pastList = []
 
+    let apps = appointments
+    if (isAdmin && selectedFilterAgentId) {
+      apps = appointments.filter(app => app.agent_id === selectedFilterAgentId)
+    }
+
     const filteredApps = searchTerm
-      ? appointments.filter(app => {
+      ? apps.filter(app => {
           const searchLower = searchTerm.toLowerCase()
           
           const date = new Date(app.start_time)
@@ -66,10 +112,12 @@ const AgentAppointmentsPage = () => {
 
           const title = (app.title || '').toLowerCase()
           const description = (app.description || '').toLowerCase()
+          const agentName = getAgentName(app.agent_id).toLowerCase()
           
           const isPast = new Date(app.end_time) < now
+          const isCancelled = app.description && app.description.includes('[Cancelada]')
           let friendlyStatus = 'programada'
-          if (app.status === 'cancelled') {
+          if (isCancelled) {
             friendlyStatus = 'cancelada'
           } else if (isPast) {
             friendlyStatus = 'completada'
@@ -80,14 +128,16 @@ const AgentAppointmentsPage = () => {
             description.includes(searchLower) ||
             friendlyStatus.includes(searchLower) ||
             dateStr.includes(searchLower) ||
-            timeStr.includes(searchLower)
+            timeStr.includes(searchLower) ||
+            agentName.includes(searchLower)
           )
         })
-      : appointments
+      : apps
 
     filteredApps.forEach(app => {
       const appDate = new Date(app.start_time)
-      if (appDate >= now && app.status !== 'cancelled') {
+      const isCancelled = app.description && app.description.includes('[Cancelada]')
+      if (appDate >= now && !isCancelled) {
         upcomingList.push(app)
       } else {
         pastList.push(app)
@@ -98,7 +148,7 @@ const AgentAppointmentsPage = () => {
     pastList.sort((a, b) => new Date(b.start_time) - new Date(a.start_time))
 
     return { upcoming: upcomingList, past: pastList }
-  }, [appointments, searchTerm])
+  }, [appointments, searchTerm, agents, isAdmin, selectedFilterAgentId])
 
   const formatDateTime = (dateString) => {
     const date = new Date(dateString)
@@ -108,9 +158,10 @@ const AgentAppointmentsPage = () => {
     }
   }
 
-  const getStatusBadge = (status, endTimeStr) => {
+  const getStatusBadge = (description, endTimeStr) => {
     const isPast = new Date(endTimeStr) < new Date()
-    if (status === 'cancelled') {
+    const isCancelled = description && description.includes('[Cancelada]')
+    if (isCancelled) {
       return <span className="status-badge cancelled"><XCircle size={14} /> Cancelada</span>
     }
     if (isPast) {
@@ -118,6 +169,7 @@ const AgentAppointmentsPage = () => {
     }
     return <span className="status-badge scheduled"><CalendarDays size={14} /> Programada</span>
   }
+
 
   if (loading) {
     return (
@@ -137,8 +189,27 @@ const AgentAppointmentsPage = () => {
           <p>Gestiona tus citas programadas y revisa tu historial.</p>
         </header>
 
-        {!agentId ? (
+        {isAdmin && (
+          <div className="agent-selector-container">
+            <label htmlFor="active-agent-select"><strong>Seleccionar Agente: </strong></label>
+            <select
+              id="active-agent-select"
+              value={selectedFilterAgentId}
+              onChange={(e) => setSelectedFilterAgentId(e.target.value)}
+              className="agent-select"
+            >
+              {agents.map(agent => (
+                <option key={agent.id} value={agent.id}>
+                  {agent.full_name || agent.name || agent.email} {agent.id === user?.id ? '(Tú)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {!agentId && !isAdmin ? (
           <div className="no-agent-alert">
+
             <AlertCircle size={48} color="#ef4444" />
             <h2>No tienes un perfil de agente asignado</h2>
             <p>Por favor, contacta con un administrador para configurar tu perfil.</p>
@@ -183,10 +254,15 @@ const AgentAppointmentsPage = () => {
                     <div className="cards-grid">
                       {upcoming.map(app => {
                         const { date, time } = formatDateTime(app.start_time)
+                        const cleanDesc = (app.description || '')
+                          .replace('[Cancelada]', '')
+                          .replace('[Reprogramada]', '')
+                          .replace('Cita reservada por el cliente desde la web.', '')
+                          .trim()
                         return (
                           <div key={app.id} className="appointment-card upcoming">
                             <div className="card-header">
-                              {getStatusBadge(app.status, app.end_time)}
+                              {getStatusBadge(app.description, app.end_time)}
                             </div>
                             <h3 className="card-title">{app.title || 'Cita Programada'}</h3>
                             <div className="card-details">
@@ -198,10 +274,23 @@ const AgentAppointmentsPage = () => {
                                 <Clock size={18} />
                                 <span>{time}</span>
                               </div>
+                              {isAdmin && (
+                                <div className="detail-item">
+                                  <UserSquare2 size={18} />
+                                  <span>Agente: <strong>{getAgentName(app.agent_id)}</strong></span>
+                                </div>
+                              )}
                             </div>
-                            {app.description && app.description !== 'Cita reservada por el cliente desde la web.' && (
-                              <p className="card-description">{app.description}</p>
+
+                            {cleanDesc && (
+                              <p className="card-description">{cleanDesc}</p>
                             )}
+                            <button
+                              onClick={() => handleCancel(app.id, app.description)}
+                              className="btn-cancel-appointment"
+                            >
+                              Cancelar Cita
+                            </button>
                           </div>
                         )
                       })}
@@ -221,10 +310,15 @@ const AgentAppointmentsPage = () => {
                     <div className="cards-grid">
                       {past.map(app => {
                         const { date, time } = formatDateTime(app.start_time)
+                        const cleanDesc = (app.description || '')
+                          .replace('[Cancelada]', '')
+                          .replace('[Reprogramada]', '')
+                          .replace('Cita reservada por el cliente desde la web.', '')
+                          .trim()
                         return (
                           <div key={app.id} className="appointment-card past">
                             <div className="card-header">
-                              {getStatusBadge(app.status, app.end_time)}
+                              {getStatusBadge(app.description, app.end_time)}
                             </div>
                             <h3 className="card-title">{app.title || 'Cita Programada'}</h3>
                             <div className="card-details">
@@ -236,9 +330,16 @@ const AgentAppointmentsPage = () => {
                                 <Clock size={18} />
                                 <span>{time}</span>
                               </div>
+                              {isAdmin && (
+                                <div className="detail-item">
+                                  <UserSquare2 size={18} />
+                                  <span>Agente: <strong>{getAgentName(app.agent_id)}</strong></span>
+                                </div>
+                              )}
                             </div>
-                            {app.description && app.description !== 'Cita reservada por el cliente desde la web.' && (
-                              <p className="card-description">{app.description}</p>
+
+                            {cleanDesc && (
+                              <p className="card-description">{cleanDesc}</p>
                             )}
                           </div>
                         )

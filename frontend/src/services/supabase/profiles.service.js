@@ -111,8 +111,18 @@ export const profilesService = {
     try {
       const existing = await this.getById(authUser.id)
       if (existing) {
-        console.log('DEBUG: Perfil existente encontrado');
+        console.log('DEBUG: Perfil existente por ID encontrado');
         return existing
+      }
+
+      // Si no existe por ID, buscamos por email (caso de cliente pre-registrado por un agente)
+      console.log('DEBUG: Buscando perfil por email:', authUser.email);
+      const existingByEmail = await this.getByEmail(authUser.email.toLowerCase())
+      if (existingByEmail) {
+        console.log('DEBUG: Perfil existente por email encontrado con ID:', existingByEmail.id, '. Actualizando ID a:', authUser.id);
+        // Actualizamos el ID de la fila existente al ID real de Supabase Auth
+        const updated = await this.update(existingByEmail.id, { id: authUser.id })
+        return updated
       }
 
       console.log('DEBUG: Perfil no encontrado, creando...');

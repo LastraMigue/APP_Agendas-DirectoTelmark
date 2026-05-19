@@ -12,14 +12,14 @@ const Dashboard = () => {
   const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name || user?.email || '')
   
   // Lógica de detección de rol — prioriza user_metadata.role
-  const userRole = user?.user_metadata?.role || (user?.email === 'admin@test.com' ? 'admin' : 'agente')
+  const userRole = user?.user_metadata?.role || (user?.email === 'admin@test.com' ? 'admin' : 'client')
 
   useEffect(() => {
     const fetchProfileData = async () => {
       if (!user) return
 
-      // Si ya tenemos el nombre en los metadatos, lo usamos
-      if (user.user_metadata?.full_name) {
+      // Si ya tenemos el nombre y el rol en los metadatos, los usamos
+      if (user.user_metadata?.full_name && user.user_metadata?.role) {
         setDisplayName(user.user_metadata.full_name)
         return
       }

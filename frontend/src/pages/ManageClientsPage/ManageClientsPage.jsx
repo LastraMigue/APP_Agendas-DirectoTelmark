@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useContext } from 'react'
 import { MainLayout } from '../../layouts/MainLayout'
 import { profilesService } from '../../services/supabase/profiles.service'
 import { NotificationContext } from '../../context/NotificationContext'
-import { Contact } from 'lucide-react'
+import { Contact, AlertTriangle } from 'lucide-react'
 import Loader from '../../components/Loader/Loader'
 import './ManageClientsPage.css'
 
@@ -14,6 +14,7 @@ const ManageClientsPage = () => {
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [newClient, setNewClient] = useState({ full_name: '', email: '', phone: '' })
+  const [clientToDelete, setClientToDelete] = useState(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -48,8 +49,14 @@ const ManageClientsPage = () => {
     setFilteredClients(filtered)
   }, [searchTerm, clients])
 
-  const handleDelete = async (id, name) => {
-    if (!window.confirm(`¿Eliminar al cliente ${name}?`)) return
+  const handleDeleteClick = (id, name) => {
+    setClientToDelete({ id, name })
+  }
+
+  const confirmDelete = async () => {
+    if (!clientToDelete) return
+    const { id, name } = clientToDelete
+    setClientToDelete(null)
     
     setError('')
     setSuccess('')
@@ -58,7 +65,6 @@ const ManageClientsPage = () => {
       console.log('Intentando eliminar cliente ID:', id)
       const count = await profilesService.delete(id)
 
-      
       if (count === 0) {
         setError('No se pudo eliminar el cliente. Es posible que no tengas permisos (RLS) o que el cliente ya no exista.')
       } else {
@@ -197,7 +203,7 @@ const ManageClientsPage = () => {
                   <div className="col-actions">
                     <button 
                       className="btn-delete"
-                      onClick={() => handleDelete(client.id, client.full_name || 'cliente')}
+                      onClick={() => handleDeleteClick(client.id, client.full_name || 'cliente')}
                     >
                       Eliminar
                     </button>
@@ -245,6 +251,35 @@ const ManageClientsPage = () => {
                 <button type="submit" className="btn-primary">Crear</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {clientToDelete && (
+        <div className="modal-overlay" onClick={() => setClientToDelete(null)}>
+          <div className="modal modal-confirm-delete" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-icon-warning">
+              <AlertTriangle size={32} />
+            </div>
+            <h2>Confirmar Eliminación</h2>
+            <p style={{ margin: '1.5rem 0', textAlign: 'center', fontSize: '1.1rem', color: 'var(--text-main)' }}>
+              ¿Estás seguro de que deseas eliminar al cliente <strong>{clientToDelete.name}</strong>?
+            </p>
+            <p style={{ margin: '0.5rem 0 1.5rem 0', textAlign: 'center', fontSize: '0.9rem', color: '#dc2626', fontWeight: 500 }}>
+              Esta acción eliminará el perfil del cliente del sistema.
+            </p>
+            <div className="modal-actions">
+              <button type="button" onClick={() => setClientToDelete(null)}>
+                Cancelar
+              </button>
+              <button 
+                type="button" 
+                className="btn-primary btn-confirm-delete"
+                onClick={confirmDelete}
+              >
+                Eliminar
+              </button>
+            </div>
           </div>
         </div>
       )}

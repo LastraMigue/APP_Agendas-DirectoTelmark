@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { MainLayout } from '../../layouts/MainLayout'
 import { profilesService } from '../../services/supabase/profiles.service'
-import { Users } from 'lucide-react'
+import { Users, AlertTriangle } from 'lucide-react'
 import Loader from '../../components/Loader/Loader'
 import '../ManageClientsPage/ManageClientsPage.css'
 
@@ -12,6 +12,7 @@ const ManageAgentsPage = () => {
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [newAgent, setNewAgent] = useState({ full_name: '', email: '', phone: '' })
+  const [agentToDelete, setAgentToDelete] = useState(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -46,9 +47,15 @@ const ManageAgentsPage = () => {
     setFilteredAgents(filtered)
   }, [searchTerm, agents])
 
-  const handleDelete = async (id, name) => {
-    if (!window.confirm(`¿Eliminar al agente ${name}?`)) return
-    
+  const handleDeleteClick = (id, name) => {
+    setAgentToDelete({ id, name })
+  }
+
+  const confirmDelete = async () => {
+    if (!agentToDelete) return
+    const { id, name } = agentToDelete
+    setAgentToDelete(null)
+
     setError('')
     setSuccess('')
 
@@ -147,7 +154,7 @@ const ManageAgentsPage = () => {
                   <div className="col-actions">
                     <button 
                       className="btn-delete"
-                      onClick={() => handleDelete(agent.id, agent.full_name || 'agente')}
+                      onClick={() => handleDeleteClick(agent.id, agent.full_name || 'agente')}
                     >
                       Eliminar
                     </button>
@@ -195,6 +202,35 @@ const ManageAgentsPage = () => {
                 <button type="submit" className="btn-primary">Crear</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {agentToDelete && (
+        <div className="modal-overlay" onClick={() => setAgentToDelete(null)}>
+          <div className="modal modal-confirm-delete" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-icon-warning">
+              <AlertTriangle size={32} />
+            </div>
+            <h2>Confirmar Eliminación</h2>
+            <p style={{ margin: '1.5rem 0', textAlign: 'center', fontSize: '1.1rem', color: 'var(--text-main)' }}>
+              ¿Estás seguro de que deseas eliminar al agente <strong>{agentToDelete.name}</strong>?
+            </p>
+            <p style={{ margin: '0.5rem 0 1.5rem 0', textAlign: 'center', fontSize: '0.9rem', color: '#dc2626', fontWeight: 500 }}>
+              Esta acción eliminará el perfil del agente del sistema.
+            </p>
+            <div className="modal-actions">
+              <button type="button" onClick={() => setAgentToDelete(null)}>
+                Cancelar
+              </button>
+              <button 
+                type="button" 
+                className="btn-primary btn-confirm-delete"
+                onClick={confirmDelete}
+              >
+                Eliminar
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -285,3 +285,30 @@
     margin-top: 0.5rem;
   }
 }
+
+/* Delete Confirmation Modal Specific Styles */
+.modal-confirm-delete h2 {
+  border-bottom-color: #ef4444 !important;
+}
+
+.modal-icon-warning {
+  color: #ef4444;
+  margin: 0 auto 1.5rem auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fef2f2;
+  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+}
+
+.btn-confirm-delete {
+  background-color: #ef4444 !important;
+  color: white !important;
+}
+
+.btn-confirm-delete:hover {
+  background-color: #dc2626 !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}

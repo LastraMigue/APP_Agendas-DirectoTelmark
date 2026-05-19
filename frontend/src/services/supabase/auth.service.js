@@ -111,7 +111,7 @@ export const authService = {
       const { data, error } = await supabase.auth.verifyOtp({
         email,
         token,
-        type: 'magiclink'
+        type: 'email'
       })
       if (error) throw error
       return { success: true, data }

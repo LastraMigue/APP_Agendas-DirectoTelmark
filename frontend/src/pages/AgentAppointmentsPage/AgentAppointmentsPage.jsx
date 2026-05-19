@@ -13,6 +13,7 @@ const AgentAppointmentsPage = () => {
   const [loading, setLoading] = useState(true)
   const [agentId, setAgentId] = useState(null)
   const [activeTab, setActiveTab] = useState('upcoming') // 'upcoming' or 'past'
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     const fetchAgentAndAppointments = async () => {
@@ -26,13 +27,13 @@ const AgentAppointmentsPage = () => {
             .eq('id', user.id)
             .eq('role', 'agent')
             .maybeSingle()
-          
+
           const currentAgentId = profileData?.id
 
           if (currentAgentId) {
             setAgentId(currentAgentId)
             const allAppointments = await appointmentsService.getAll()
-            
+
             // Filtramos las citas de este agente
             const agentAppointments = allAppointments.filter(app => app.agent_id === currentAgentId)
             setAppointments(agentAppointments)
@@ -55,7 +56,36 @@ const AgentAppointmentsPage = () => {
     const upcomingList = []
     const pastList = []
 
-    appointments.forEach(app => {
+    const filteredApps = searchTerm
+      ? appointments.filter(app => {
+          const searchLower = searchTerm.toLowerCase()
+          
+          const date = new Date(app.start_time)
+          const dateStr = date.toLocaleDateString('es-ES', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }).toLowerCase()
+          const timeStr = date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }).toLowerCase()
+
+          const title = (app.title || '').toLowerCase()
+          const description = (app.description || '').toLowerCase()
+          
+          const isPast = new Date(app.end_time) < now
+          let friendlyStatus = 'programada'
+          if (app.status === 'cancelled') {
+            friendlyStatus = 'cancelada'
+          } else if (isPast) {
+            friendlyStatus = 'completada'
+          }
+
+          return (
+            title.includes(searchLower) ||
+            description.includes(searchLower) ||
+            friendlyStatus.includes(searchLower) ||
+            dateStr.includes(searchLower) ||
+            timeStr.includes(searchLower)
+          )
+        })
+      : appointments
+
+    filteredApps.forEach(app => {
       const appDate = new Date(app.start_time)
       if (appDate >= now && app.status !== 'cancelled') {
         upcomingList.push(app)
@@ -68,7 +98,7 @@ const AgentAppointmentsPage = () => {
     pastList.sort((a, b) => new Date(b.start_time) - new Date(a.start_time))
 
     return { upcoming: upcomingList, past: pastList }
-  }, [appointments])
+  }, [appointments, searchTerm])
 
   const formatDateTime = (dateString) => {
     const date = new Date(dateString)
@@ -102,11 +132,9 @@ const AgentAppointmentsPage = () => {
   return (
     <MainLayout>
       <div className="agent-appointments-container">
-        <header className="page-header">
-          <div>
-            <h1>Historial de Citas</h1>
-            <p>Gestiona tus citas programadas y revisa tu historial</p>
-          </div>
+        <header className="manage-clients-header">
+          <h2>Historial de Citas</h2>
+          <p>Gestiona tus citas programadas y revisa tu historial.</p>
         </header>
 
         {!agentId ? (
@@ -118,18 +146,29 @@ const AgentAppointmentsPage = () => {
         ) : (
           <div className="appointments-content">
             <div className="tabs">
-              <button 
+              <button
                 className={`tab-btn ${activeTab === 'upcoming' ? 'active' : ''}`}
                 onClick={() => setActiveTab('upcoming')}
               >
                 Próximas Citas <span className="badge">{upcoming.length}</span>
               </button>
-              <button 
+              <button
                 className={`tab-btn ${activeTab === 'past' ? 'active' : ''}`}
                 onClick={() => setActiveTab('past')}
               >
                 Citas Pasadas <span className="badge">{past.length}</span>
               </button>
+            </div>
+            <div className="card-divider"></div>
+
+            <div className="search-bar">
+              <input
+                type="text"
+                placeholder="Buscar por título de cita, fecha, descripción, estado..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
             </div>
 
             <div className="appointments-list">
@@ -160,7 +199,7 @@ const AgentAppointmentsPage = () => {
                                 <span>{time}</span>
                               </div>
                             </div>
-                            {app.description && (
+                            {app.description && app.description !== 'Cita reservada por el cliente desde la web.' && (
                               <p className="card-description">{app.description}</p>
                             )}
                           </div>
@@ -198,7 +237,7 @@ const AgentAppointmentsPage = () => {
                                 <span>{time}</span>
                               </div>
                             </div>
-                            {app.description && (
+                            {app.description && app.description !== 'Cita reservada por el cliente desde la web.' && (
                               <p className="card-description">{app.description}</p>
                             )}
                           </div>

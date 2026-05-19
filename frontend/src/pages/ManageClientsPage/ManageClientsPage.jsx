@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useContext } from 'react'
 import { MainLayout } from '../../layouts/MainLayout'
 import { profilesService } from '../../services/supabase/profiles.service'
 import { NotificationContext } from '../../context/NotificationContext'
-import { Contact } from 'lucide-react'
+import { Contact, User } from 'lucide-react'
 import Loader from '../../components/Loader/Loader'
 import './ManageClientsPage.css'
 
@@ -154,17 +154,18 @@ const ManageClientsPage = () => {
     <MainLayout>
       <div className="manage-clients-container">
         <header className="manage-clients-header">
-          <h2><Contact size={28} className="header-icon" /> Gestión de Clientes</h2>
-          <p>Administra los clientes registrados en el sistema</p>
+          <h2>Gestión de Clientes</h2>
+          <p>Administra los clientes registrados en el sistema.</p>
         </header>
 
         <div className="manage-clients-card">
           <div className="card-header">
-            <h3>Listado de Clientes</h3>
+            <h3><User size={20} className="agent-icon" color="var(--primary)" /> Listado de Clientes</h3>
             <button className="btn-create" onClick={() => setShowCreateModal(true)}>
               + Nuevo Cliente
             </button>
           </div>
+          <div className="card-divider"></div>
 
           {error && <div className="alert alert-error">{error}</div>}
           {success && <div className="alert alert-success">{success}</div>}

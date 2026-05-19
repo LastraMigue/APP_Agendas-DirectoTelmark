@@ -29,7 +29,7 @@
 
 .agent-calendar-card {
   background: white;
-  border: 1px solid var(--border-color);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius);
   padding: 1.5rem;
   box-shadow: var(--shadow);
@@ -124,6 +124,7 @@
   width: 90%;
   max-width: 400px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border: 2px solid var(--border-color);
 }
 
 .reservation-modal h3 {
@@ -256,7 +257,7 @@
   padding: 1.25rem;
   background: var(--card-bg);
   border-radius: var(--radius);
-  border: 1px solid var(--border-color);
+  border: 2px solid var(--border-color);
   box-shadow: var(--shadow);
   max-width: 650px;
   margin-left: auto;

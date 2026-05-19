@@ -28,7 +28,7 @@
   background: white;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  border: 1px solid var(--border-color);
+  border: 2px solid var(--border-color);
   overflow: hidden;
 }
 
@@ -79,7 +79,7 @@
   padding: 1.25rem;
   background: var(--card-bg);
   border-radius: var(--radius);
-  border: 1px solid var(--border-color);
+  border: 2px solid var(--border-color);
   box-shadow: var(--shadow);
   max-width: 650px;
   margin-left: auto;

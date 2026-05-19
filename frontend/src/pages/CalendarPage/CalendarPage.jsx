@@ -443,7 +443,7 @@ const CalendarPage = () => {
         <Toast toast={toast} onClose={() => setToast(null)} />
 
         {agents.length === 0 && !(isAdmin || isSupervisor) ? (
-          <div style={{ textAlign: 'center', padding: '3rem', background: 'white', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
+          <div style={{ textAlign: 'center', padding: '3rem', background: 'white', borderRadius: 'var(--radius)', border: '2px solid var(--border-color)' }}>
             <CalendarIcon size={48} color="var(--primary)" style={{ marginBottom: '1rem' }} />
             <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>No hay agentes registrados en la base de datos.</p>
           </div>

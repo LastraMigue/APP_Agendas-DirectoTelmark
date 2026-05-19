@@ -18,7 +18,7 @@
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
   padding: 48px;
   position: relative;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 2px solid var(--border-color);
 }
 
 .back-button {

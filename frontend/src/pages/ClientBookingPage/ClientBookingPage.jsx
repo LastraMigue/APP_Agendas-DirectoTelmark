@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext, useMemo } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
+import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import esLocale from '@fullcalendar/core/locales/es'
 import { MainLayout } from '../../layouts/MainLayout'
@@ -263,29 +264,36 @@ const ClientBookingPage = () => {
   return (
     <MainLayout>
       <div className="agents-calendars-container">
-        <header className="agents-calendars-header">
-          <h2>Calendario de Citas</h2>
+        <header className="manage-clients-header">
+          <h2>Reservar una Cita</h2>
           <p>Horario de atención: 08:00 - 18:00 (Citas de 30 min)</p>
         </header>
 
-        <div className="agent-calendar-card" style={{ maxWidth: '900px', margin: '0 auto' }}>
-          <FullCalendar
-            plugins={[dayGridPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
-            headerToolbar={{
-              left: 'prev,next today',
-              center: 'title',
-              right: ''
-            }}
-            locale={esLocale}
-            buttonText={{
-              today: 'Hoy'
-            }}
-            events={calendarEvents}
-            dateClick={handleDateClick}
-            height="auto"
-            selectable={true}
-          />
+        <div className="calendars-grid">
+          <div className="agent-calendar-card">
+            <h3><CalendarIcon size={20} className="agent-icon" color="var(--primary)" /> Calendario de Reservas</h3>
+            <FullCalendar
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              initialView="dayGridMonth"
+              headerToolbar={{
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+              }}
+              locale={esLocale}
+              buttonText={{
+                today: 'Hoy',
+                month: 'Mes',
+                week: 'Semana',
+                day: 'Día',
+                list: 'Lista'
+              }}
+              events={calendarEvents}
+              dateClick={handleDateClick}
+              height="auto"
+              selectable={true}
+            />
+          </div>
         </div>
       </div>
 

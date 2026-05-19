@@ -15,6 +15,7 @@ const ClientAppointmentsPage = () => {
   const [loading, setLoading] = useState(true)
   const [clientId, setClientId] = useState(null)
   const [activeTab, setActiveTab] = useState('upcoming') // 'upcoming' or 'past'
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -91,7 +92,39 @@ const ClientAppointmentsPage = () => {
     const upcomingList = []
     const pastList = []
 
-    appointments.forEach(app => {
+    const filteredApps = searchTerm
+      ? appointments.filter(app => {
+          const searchLower = searchTerm.toLowerCase()
+          
+          const date = new Date(app.start_time)
+          const dateStr = date.toLocaleDateString('es-ES', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }).toLowerCase()
+          const timeStr = date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }).toLowerCase()
+
+          const title = (app.title || '').toLowerCase()
+          const description = (app.description || '').toLowerCase()
+          const agentName = getAgentName(app.agent_id).toLowerCase()
+          
+          const isPast = new Date(app.end_time) < now
+          const isCancelled = app.description && app.description.includes('[Cancelada]')
+          let friendlyStatus = 'programada'
+          if (isCancelled) {
+            friendlyStatus = 'cancelada'
+          } else if (isPast) {
+            friendlyStatus = 'completada'
+          }
+
+          return (
+            title.includes(searchLower) ||
+            description.includes(searchLower) ||
+            friendlyStatus.includes(searchLower) ||
+            dateStr.includes(searchLower) ||
+            timeStr.includes(searchLower) ||
+            agentName.includes(searchLower)
+          )
+        })
+      : appointments
+
+    filteredApps.forEach(app => {
       const appDate = new Date(app.start_time)
       const isCancelled = app.description && app.description.includes('[Cancelada]')
       if (appDate >= now && !isCancelled) {
@@ -107,7 +140,7 @@ const ClientAppointmentsPage = () => {
     pastList.sort((a, b) => new Date(b.start_time) - new Date(a.start_time))
 
     return { upcoming: upcomingList, past: pastList }
-  }, [appointments])
+  }, [appointments, searchTerm, agents])
 
   const formatDateTime = (dateString) => {
     const date = new Date(dateString)
@@ -147,11 +180,9 @@ const ClientAppointmentsPage = () => {
   return (
     <MainLayout>
       <div className="agent-appointments-container">
-        <header className="page-header">
-          <div>
-            <h1>Mis Citas</h1>
-            <p>Revisa el historial de tus citas y tus próximas reservas</p>
-          </div>
+        <header className="manage-clients-header">
+          <h2>Mis Citas</h2>
+          <p>Revisa el historial de tus citas y tus próximas reservas</p>
         </header>
 
         {!clientId ? (
@@ -175,6 +206,17 @@ const ClientAppointmentsPage = () => {
               >
                 Historial de Citas <span className="badge">{past.length}</span>
               </button>
+            </div>
+            <div className="card-divider"></div>
+
+            <div className="search-bar">
+              <input
+                type="text"
+                placeholder="Buscar por título de cita, fecha, descripción, estado..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
             </div>
 
             <div className="appointments-list">
